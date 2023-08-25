@@ -2,6 +2,8 @@ package restaurant.dto;
 
 import category.dto.CategoryDTO;
 import menu.dto.MenuDTO;
+import region.dto.RegionDTO;
+import review.dto.ReviewDTO;
 
 import java.util.ArrayList;
 
