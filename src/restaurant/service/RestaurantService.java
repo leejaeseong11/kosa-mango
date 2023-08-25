@@ -9,31 +9,39 @@ import java.util.ArrayList;
 public class RestaurantService {
     private int pageSize;
     private int[] restaurantIdList;
-    RestaurantService(int pageSize) {
+    private int allRestaurantCount;
+    public RestaurantService(int pageSize) {
         this.pageSize = pageSize;
         restaurantIdList = new int[pageSize];
     }
+
     public void printRestaurantList(String searchType, String searchWord, int index) throws FindException {
         RestaurantDAO rDao = new RestaurantDAO();
         ArrayList<RestaurantDTO> rDtoList = null;
             try {
                 if (searchType == "GENERAL_SEARCH") {
-                    rDtoList = rDao.searchRestaurants(searchWord, index);
+                    rDtoList = rDao.searchRestaurants(searchWord, this.pageSize, index);
+                    allRestaurantCount = rDao.getRestaurantCount();
                 }
             } catch (FindException e) {
+                e.printStackTrace();
                 throw new FindException("검색에 실패했습니다.");
             }
 
         if (rDtoList != null) {
             for (int i = 0; i < rDtoList.size(); i++) {
                 RestaurantDTO rDto = rDtoList.get(i);
-                String simpleAddress = rDto.getRegions().getCityName() + " " + rDto.getRegions().getSiGunGu();
-                String[] categoryNames = new String[rDto.getCategory().size()];
+                String simpleAddress = rDto.getRegion().getCityName() + " " + rDto.getRegion().getSiGunGu();
+                String[] categoryNames = new String[rDto.getCategories().size()];
                 for (int j = 0; j < categoryNames.length; j++) {
-                    categoryNames[j] = rDto.getCategory().get(j).getName();
+                    categoryNames[j] = rDto.getCategories().get(j).getName();
                 }
                 restaurantIdList[i] = rDto.getId();
-                System.out.println(String.format("%d. %s / %f점 / %s / %s", i+1, rDto.getName(), rDto.getRatingScore(), simpleAddress, String.join(" ", categoryNames)));
+                if (rDto.getRatingScore() == -1) {
+                    System.out.println(String.format("%d. %s / - / %s / %s", i+1, rDto.getName(), simpleAddress, String.join(" ", categoryNames)));
+                } else {
+                    System.out.println(String.format("%d. %s / %f점 / %s / %s", i+1, rDto.getName(), rDto.getRatingScore(), simpleAddress, String.join(" ", categoryNames)));
+                }
             }
         }
     }

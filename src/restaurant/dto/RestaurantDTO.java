@@ -17,8 +17,8 @@ public class RestaurantDTO {
     private String runTime;
     private String detailAddress;
     private ArrayList<ReviewDTO> reviews;
-    private RegionDTO regions;
-    private ArrayList<CategoryDTO> category;
+    private RegionDTO region;
+    private ArrayList<CategoryDTO> categories;
     private ArrayList<MenuDTO> menu;
 
 }
