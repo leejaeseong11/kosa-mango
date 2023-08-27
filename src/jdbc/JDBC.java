@@ -15,7 +15,7 @@ public class JDBC {
         Connection conn = null;
         Properties env = new Properties();
         try {
-            env.load(JDBC.class.getResourceAsStream("../application.properties"));
+            env.load(JDBC.class.getResourceAsStream("./application.properties"));
         } catch (IOException e) {
             throw new Exception("application.properties 파일을 찾지 못했습니다.");
         }
