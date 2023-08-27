@@ -7,7 +7,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.my.sql.JDBC;
+import jdbc.JDBC;
+import review.dto.ReviewDTO;
 
 public class ReviewDAO {
 	private Connection conn = null;
@@ -18,7 +19,6 @@ public class ReviewDAO {
 		try {
 			conn = JDBC.connect();
 			pstmt = conn.prepareStatement(insertSQL);
-			// 사용자한테 입력받을 값, 임시로 이렇게 한 거임
 			pstmt.setInt(1, reviewDTO.getId());
 			pstmt.setInt(2, reviewDTO.getRestaurantId());
 			pstmt.setString(3, reviewDTO.getContent());
