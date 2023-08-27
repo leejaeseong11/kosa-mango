@@ -15,13 +15,21 @@ public class RestaurantService {
         restaurantIdList = new int[pageSize];
     }
 
+    public int getRestaurantCount() {
+        return allRestaurantCount;
+    }
+
     public void printRestaurantList(String searchType, String searchWord, int index) throws FindException {
         RestaurantDAO rDao = new RestaurantDAO();
         ArrayList<RestaurantDTO> rDtoList = null;
             try {
-                if (searchType == "GENERAL_SEARCH") {
+                if (searchType.equals("GENERAL_SEARCH")) {
                     rDtoList = rDao.searchRestaurants(searchWord, this.pageSize, index);
                     allRestaurantCount = rDao.getRestaurantCount();
+                } else if (searchType.equals("RANK_CATEGORY")) {
+
+                } else if (searchType.equals("RANK_REGION")) {
+
                 }
             } catch (FindException e) {
                 e.printStackTrace();
@@ -40,14 +48,20 @@ public class RestaurantService {
                 if (rDto.getRatingScore() == -1) {
                     System.out.println(String.format("%d. %s / - / %s / %s", i+1, rDto.getName(), simpleAddress, String.join(" ", categoryNames)));
                 } else {
-                    System.out.println(String.format("%d. %s / %f점 / %s / %s", i+1, rDto.getName(), rDto.getRatingScore(), simpleAddress, String.join(" ", categoryNames)));
+                    System.out.println(String.format("%d. %s / %.1f점 / %s / %s", i+1, rDto.getName(), rDto.getRatingScore(), simpleAddress, String.join(" ", categoryNames)));
                 }
             }
         }
     }
 
-    public void printDetailRestaurant(int orderIndex) {
+    public void printDetailRestaurant(String viewType, int orderIndex) throws FindException {
         RestaurantDAO rDao = new RestaurantDAO();
-//        RestaurantDTO rDto = rDao.selectDetailRestaurantInfo(restaurantIdList[orderIndex]);
+        if (viewType.equals("VIEW_DETAIL")) {
+//        RestaurantDTO rDto = rDao.selectDetailRestaurantInfo(restaurantIdList[orderIndex-1]);
+        } else if(viewType.equals("VIEW_RANDOM")) {
+            RestaurantDTO rDto = rDao.randomRestaurantNearMyHouse(restaurantIdList[orderIndex-1]);
+        }
+
+        // print
     }
 }
