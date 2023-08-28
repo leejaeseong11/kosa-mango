@@ -25,12 +25,11 @@ public class UserDAO {
 
 		// 아이디 검사
 		if (!isIdValid(uDTO.getId())) {
-			System.out.println("존재하는 아이디 입니다.");
+			
 			return;
 		}
 
 		if (!isPasswordValid(uDTO.getPassword())) {
-			System.out.println("유효하지 않은 비밀번호입니다. 회원 가입 실패");
 			return;
 		}
 
@@ -44,8 +43,6 @@ public class UserDAO {
 			pstmt.setInt(4, uDTO.getGender());
 			pstmt.setString(5, uDTO.getZipcode());
 			int rowcnt = pstmt.executeUpdate();
-			System.out.println(rowcnt + "건 추가 성공");
-			// conn.rollback();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -61,19 +58,25 @@ public class UserDAO {
 				} catch (SQLException e) {
 				}
 			}
+				if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+				}
+			}
 
 		}
 
 	}
 
-	public boolean isPasswordValid(String password) {
+	private boolean isPasswordValid(String password) {
 		// 비밀번호는 최소 8자 이상, 대문자, 소문자, 숫자, 특수문자가 모두 포함되어야 함
 		String regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
 		return password.matches(regex);
 	}
 
 	// 아이디 중복검사
-	public boolean isIdValid(String id) {
+	private boolean isIdValid(String id) {
 		PreparedStatement pstmt = null;
 		Connection conn = null;
 		try {
@@ -87,10 +90,10 @@ public class UserDAO {
 		try {
 			pstmt = conn.prepareStatement(selectSQL);
 			pstmt.setString(1, id);
-			ResultSet rset = pstmt.executeQuery();
-			while (rset.next()) {
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
 				// 존재하면 1이상 리턴
-				if (rset.getInt(1) > 0) {
+				if (rs.getInt(1) > 0) {
 					return false;
 				} else {
 					return true;
@@ -131,7 +134,7 @@ public class UserDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		String selectSQL = "SELECT * From users where id=? and password=? AND STATUS = 1";
+		String selectSQL = "SELECT * FROM users WHERE ID=? AND PASSWORD=? AND STATUS = 1";
 
 		try {
 			pstmt = conn.prepareStatement(selectSQL);
@@ -140,8 +143,6 @@ public class UserDAO {
 			rs = pstmt.executeQuery();
 			// conn.rollback();
 			if (rs.next()) {
-				System.out.println("로그인 성공");
-
 				user = new UserDTO();
 				user.setUserId(rs.getInt(1));
 				user.setId(rs.getString(2));
@@ -151,18 +152,15 @@ public class UserDAO {
 				user.setZipcode(rs.getString(7));
 
 			} else {
-				System.out.println("로그인 실패");
 
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			if (pstmt != null) {
 				try {
 					pstmt.close();
 				} catch (SQLException e) {
-					// TODO Auto-generated catch block
 
 				}
 			}
@@ -187,14 +185,13 @@ public class UserDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		String deleteSQL = "update users" + " set status=2" + " where id=? and password=? AND STATUS = 1";
+		String deleteSQL = "UPDATE users" + " SET status=2" + " WHERE id=? and PASSWORD=? AND STATUS = 1";
+		"UPDATE users" + "SET "
 		try {
 			pstmt = conn.prepareStatement(deleteSQL);
 			pstmt.setString(1, uDTO.getId());
 			pstmt.setString(2, uDTO.getPassword());
 			int rowcnt = pstmt.executeUpdate();
-			System.out.println(rowcnt + "건 추가 성공");
-			// conn.rollback();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -235,9 +232,7 @@ public class UserDAO {
 			int rowCnt = pstmt.executeUpdate();
 
 			if (rowCnt > 0) {
-				System.out.println(rowCnt + "건 수정 성공");
 			} else {
-				System.out.println("수정 실패");
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -260,98 +255,62 @@ public class UserDAO {
 	}
 
 	//나의 찜한식당, 회원 상세정보 열람
-	public void selectUser(String id, String password) {
-		PreparedStatement pstmt = null;
-		Connection conn = null;
-		ResultSet rs = null;
-		try {
-			conn = JDBC.connect();
-			System.out.println("connect");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		String selectSQL = "SELECT u.ID, u.PASSWORD, u.USER_NAME, u.GENDER, r.ZIPCODE, r.CITY_NAME, r.SI_GUN_GU, r.DONG_EUP_MYEON FROM USERS u JOIN REGIONS r ON u.ZIPCODE = r.ZIPCODE WHERE U.id = ? AND u.PASSWORD = ? AND u.STATUS = 1";
+	public UserDTO selectUser(String id, String password) {
+    PreparedStatement pstmt = null;
+    Connection conn = null;
+    ResultSet rs = null;
+    UserDTO user = null;
 
-		try {
-			pstmt = conn.prepareStatement(selectSQL);
-			pstmt.setString(1, id);
-			pstmt.setString(2, password);
-			rs = pstmt.executeQuery();
+    try {
+        conn = JDBC.connect();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    String selectSQL = "SELECT u.ID, u.PASSWORD, u.USER_NAME, u.GENDER, r.ZIPCODE, r.CITY_NAME, r.SI_GUN_GU, r.DONG_EUP_MYEON FROM USERS u JOIN REGIONS r ON u.ZIPCODE = r.ZIPCODE WHERE U.id = ? AND u.PASSWORD = ? AND u.STATUS = 1";
 
-			if(rs.next()) {
-				UserDTO user = new UserDTO();
-				user.setId(rs.getString("id"));
-				user.setPassword(rs.getString("PASSWORD"));
-				user.setUserName(rs.getString("USER_NAME"));
-				user.setGender(rs.getInt("GENDER"));
+    try {
+        pstmt = conn.prepareStatement(selectSQL);
+        pstmt.setString(1, id);
+        pstmt.setString(2, password);
+        rs = pstmt.executeQuery();
 
-				RegionDTO region = new RegionDTO();
-				region.setZipcode(rs.getString("ZIPCODE"));
-				region.setCityName(rs.getString("CITY_NAME"));
-				region.setSiGunGu(rs.getString("SI_GUN_GU"));
-				region.setDongEupMyeon(rs.getString("DONG_EUP_MYEON"));
+        if (rs.next()) {
+            user = new UserDTO();
+            user.setId(rs.getString("id"));
+            user.setPassword(rs.getString("PASSWORD"));
+            user.setUserName(rs.getString("USER_NAME"));
+            user.setGender(rs.getInt("GENDER"));
 
-				user.setRegion(region);
+            RegionDTO region = new RegionDTO();
+            region.setZipcode(rs.getString("ZIPCODE"));
+            region.setCityName(rs.getString("CITY_NAME"));
+            region.setSiGunGu(rs.getString("SI_GUN_GU"));
+            region.setDongEupMyeon(rs.getString("DONG_EUP_MYEON"));
+            user.setRegion(region);
 
-				System.out.println("회원상세정보");
-				System.out.println(user);
+            // 찜 목록 조회
+            new FavoriteDAO().selectFavoritesByUserId(id);
+        }
 
-				System.out.println("회원 찜 목록");
-				new FavoriteDAO().selectFavoritesByUserId(id);
-			}else {
-				System.out.println("비밀번호가 잘못되었습니다.");
-				return;
-			}
+    } catch (SQLException e) {
+        e.printStackTrace();
+    } finally {
+        if (pstmt != null) {
+            try {
+                pstmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        if (conn != null) {
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			if (pstmt != null) {
-				try {
-					pstmt.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-
-				}
-			}
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-				}
-			}
-
-		}
-	}
-
-	public static void main(String[] args) {
-//      String id="id1";
-//      String password = "1233";
-//      String userName = "이";
-//      int gender=1;
-//      String zipcode="07217";
-//      UserDTO uDTO = new UserDTO();
-
-//      public void join(String id, int userId, String password, String userName, int gerder, int status, String zipcode) {
-
-		// 객체 생성해서 로그인 테스트
-		UserDAO uDAO = new UserDAO();
-		UserDTO userInfo = new UserDTO();
-//      uDAO.join(uDTO);
-//      uDTO.setId("id1");
-//      uDTO.setPassword("12334");
-		// uDAO.login(uDTO);
-		// uDAO.updateUser(uDTO);
-//      uDAO.deleteUser(uDTO);
-
-		// 비밀번호는 최소 8자 이상, 대문자, 소문자, 숫자, 특수문자가 모두 포함되어야 함
-		// 회원 형식 USER_ID, ID, PASSWORD, USER_NAME, GENDER,STATUS,ZIPCODE
-//		userInfo = new UserDTO("id1", "Test1234!", "test11111", 2, "07217");// 가입 데이터
-//		uDAO.join(userInfo);
-
-		uDAO.selectUser("danbi52600", "danbi123");	//회원 상세보기
-
-	}
-
+    return user; // 조회한 회원 정보를 반환
+}
 }
