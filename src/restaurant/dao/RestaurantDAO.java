@@ -151,21 +151,21 @@ public class RestaurantDAO {
 
 
         try {
-            String sql = "SELECT *" +
-                         "FROM (SELECT res.restaurant_id, res.restaurant_name, res.view_count, res.run_time, res.detail_address, res.zipcode, reg.city_name, reg.si_gun_gu, reg.dong_eup_myeon, LISTAGG(c.category_name, ', '), res.rating_score" +
-                         "FROM restaurants res" +
-                         "JOIN regions reg ON res.zipcode = reg.zipcode" +
-                         "JOIN restaurants_categories rc ON res.restaurant_id = rc.restaurant_id" +
-                         "JOIN categories c ON c.category_id = rc.category_id" +
-                         "AND EXISTS (SELECT 1" +
-                         "FROM users u" +
-                         "JOIN regions user_reg ON u.zipcode = user_reg.zipcode" +
-                         "WHERE user_reg.city_name = reg.city_name" +
-                         "AND u.user_id = 1" +
-                         "AND user_reg.si_gun_gu = reg.si_gun_gu" +
+            String sql = " SELECT *" +
+                         " FROM (SELECT res.restaurant_id, res.restaurant_name, res.view_count, res.run_time, res.detail_address, res.zipcode, reg.city_name, reg.si_gun_gu, reg.dong_eup_myeon, LISTAGG(c.category_name, ', '), res.rating_score" +
+                         " FROM restaurants res" +
+                         " JOIN regions reg ON res.zipcode = reg.zipcode" +
+                         " JOIN restaurants_categories rc ON res.restaurant_id = rc.restaurant_id" +
+                         " JOIN categories c ON c.category_id = rc.category_id" +
+                         " AND EXISTS (SELECT 1" +
+                         " FROM users u" +
+                         " JOIN regions user_reg ON u.zipcode = user_reg.zipcode" +
+                         " WHERE user_reg.city_name = reg.city_name" +
+                         " AND u.user_id = 1" +
+                         " AND user_reg.si_gun_gu = reg.si_gun_gu" +
                          ")" +
-                         "GROUP BY res.restaurant_id, res.restaurant_name, res.view_count, res.run_time, res.detail_address, res.zipcode, reg.city_name, reg.si_gun_gu, reg.dong_eup_myeon, res.rating_score" +
-                         "ORDER BY DBMS_RANDOM.RANDOM" +
+                         " GROUP BY res.restaurant_id, res.restaurant_name, res.view_count, res.run_time, res.detail_address, res.zipcode, reg.city_name, reg.si_gun_gu, reg.dong_eup_myeon, res.rating_score" +
+                         " ORDER BY DBMS_RANDOM.RANDOM" +
                          ") WHERE ROWNUM = 1";
             pstmt = conn.prepareStatement(sql);
 
@@ -201,10 +201,10 @@ public class RestaurantDAO {
                 returnedRestaurant.setCategories(categoriesList);
                 rDTO.setRatingScore(rs.getDouble(12));
 
-                sql = "SELECT m.*"+
-                      "FROM menu m"+
-                      "JOIN restaurants res ON res.restaurant_id = m.restaurant_id" +
-                      "WHERE res.restaurant_id = ?";
+                sql = " SELECT m.*"+
+                      " FROM menu m"+
+                      " JOIN restaurants res ON res.restaurant_id = m.restaurant_id" +
+                      " WHERE res.restaurant_id = ?";
                 pstmt = conn.prepareStatement(sql);
                 pstmt.setInt(1, rDTO.getId());
                 rs = pstmt.executeQuery();
