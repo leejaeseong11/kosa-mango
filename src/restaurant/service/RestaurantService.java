@@ -1,10 +1,16 @@
 package restaurant.service;
 
+import category.dto.CategoryDTO;
 import exception.FindException;
+import menu.dto.MenuDTO;
+import region.dto.RegionDTO;
 import restaurant.dao.RestaurantDAO;
 import restaurant.dto.RestaurantDTO;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class RestaurantService {
@@ -73,12 +79,26 @@ public class RestaurantService {
      */
     public void printDetailRestaurant(String viewType, int orderIndex) throws FindException {
         RestaurantDAO rDao = new RestaurantDAO();
+        RestaurantDTO rDto = null;
+
         if (viewType.equals("VIEW_DETAIL")) {
 
         } else if(viewType.equals("VIEW_RANDOM")) {
-            RestaurantDTO rDto = rDao.randomRestaurantNearMyHouse(restaurantIdList[orderIndex-1]);
+            rDto = rDao.randomRestaurantNearMyHouse(restaurantIdList[orderIndex-1]);
         }
 
-        // print
+        if (rDto != null) {
+            System.out.println(String.format("식당 이름: %s", rDto.getName()));
+            System.out.println(String.format("카테고리: %s", rDto.getCategories().stream().map(categoryDTO -> categoryDTO.getName()).collect(Collectors.joining(" / "))));
+            System.out.println(String.format("평점: %f, 조회수: %d", rDto.getRatingScore(), rDto.getViewCount()));
+            RegionDTO regionDTO = rDto.getRegion();
+            System.out.println(String.format("주소: %s %s %s %s", regionDTO.getCityName(), regionDTO.getSiGunGu(), regionDTO.getDongEupMyeon(), rDto.getDetailAddress()));
+            System.out.println(String.format("영업 시간: %s", rDto.getRunTime()));
+            ArrayList<MenuDTO> menuList = rDto.getMenu();
+            System.out.println("=".repeat(20) + " 메뉴 정보" + "=".repeat(20));
+            for (int i = 0; i < menuList.size(); i++) {
+                System.out.println(String.format("⦁ %s : %s", i+1, menuList.get(i).getName(), menuList.get(i).getPrice()));
+            }
+        }
     }
 }
