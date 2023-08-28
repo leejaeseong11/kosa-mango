@@ -5,156 +5,215 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import FavoriteDAO.FavoriteDAO;
 import jdbc.JDBC;
+import region.dto.RegionDTO;
 import user.dto.UserDTO;
 
 public class UserDAO {
-	
+
 	public void join(UserDTO uDTO) {
-	//4. SQL±¸¹® ¼Û½Å
+		// 4. SQLêµ¬ë¬¸ ì†¡ì‹ 
 		PreparedStatement pstmt = null;
 		Connection conn = null;
 		try {
-			conn=JDBC.connect();
+			conn = JDBC.connect();
 			System.out.println("connect");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	    if (!isPasswordValid(uDTO.getPassword())) {
-	        System.out.println("À¯È¿ÇÏÁö ¾ÊÀº ºñ¹Ğ¹øÈ£ÀÔ´Ï´Ù. È¸¿ø °¡ÀÔ ½ÇÆĞ");
-	        return;
-	    }		
-		
-		String insertSQL="INSERT INTO users ( USER_ID, ID, PASSWORD, USER_NAME, GENDER,STATUS,ZIPCODE ) \r\n"
-				+ "            values (user_seq.NEXTVAL,        ?,          ?,           ?,     ?,     1,     ?)";
+
+		// ì•„ì´ë”” ê²€ì‚¬
+		if (!isIdValid(uDTO.getId())) {
+			System.out.println("ì¡´ì¬í•˜ëŠ” ì•„ì´ë”” ì…ë‹ˆë‹¤.");
+			return;
+		}
+
+		if (!isPasswordValid(uDTO.getPassword())) {
+			System.out.println("ìœ íš¨í•˜ì§€ ì•Šì€ ë¹„ë°€ë²ˆí˜¸ì…ë‹ˆë‹¤. íšŒì› ê°€ì… ì‹¤íŒ¨");
+			return;
+		}
+
+		String insertSQL = "INSERT INTO users ( USER_ID, ID, PASSWORD, USER_NAME, GENDER,STATUS,ZIPCODE ) \r\n"
+				+ "            values (seq_user_id.NEXTVAL,        ?,          ?,           ?,     ?,     1,     ?)";
 		try {
-    	pstmt=conn.prepareStatement(insertSQL);
-    	pstmt.setString(1, uDTO.getId());
-    	pstmt.setString(2, uDTO.getPassword());
-    	pstmt.setString(3, uDTO.getUserName());
-    	pstmt.setInt(4, uDTO.getGender());
-    	pstmt.setString(5, uDTO.getZipcode());
-    	int rowcnt = pstmt.executeUpdate();
-    	System.out.println(rowcnt+"°Ç Ãß°¡ ¼º°ø");
-    	//conn.rollback();
+			pstmt = conn.prepareStatement(insertSQL);
+			pstmt.setString(1, uDTO.getId());
+			pstmt.setString(2, uDTO.getPassword());
+			pstmt.setString(3, uDTO.getUserName());
+			pstmt.setInt(4, uDTO.getGender());
+			pstmt.setString(5, uDTO.getZipcode());
+			int rowcnt = pstmt.executeUpdate();
+			System.out.println(rowcnt + "ê±´ ì¶”ê°€ ì„±ê³µ");
+			// conn.rollback();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-     	 if(pstmt != null) {
-     		 try {
-     			 pstmt.close();
-     		 } catch (SQLException e) {
-     			 // TODO Auto-generated catch block
-             
-     		 }
-     	 }
-       if(conn!= null) {
-          try {
-             conn.close();
-          }catch (SQLException e) {
-       }
-       }
-   
-    }
-		
- }
-	
-	public boolean isPasswordValid(String password) {
-		   // ºñ¹Ğ¹øÈ£´Â ÃÖ¼Ò 8ÀÚ ÀÌ»ó, ´ë¹®ÀÚ, ¼Ò¹®ÀÚ, ¼ıÀÚ, Æ¯¼ö¹®ÀÚ°¡ ¸ğµÎ Æ÷ÇÔµÇ¾î¾ß ÇÔ
-	    String regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
-	    return password.matches(regex);
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (SQLException e) {
+				}
+			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+				}
+			}
+
+		}
+
 	}
 
-	public void login(UserDTO uDTO) {
-		//4. SQL±¸¹® ¼Û½Å
-			PreparedStatement pstmt = null;
-			Connection conn = null;
-			ResultSet rs=null;
-			try {
-				conn=JDBC.connect();
-				System.out.println("connect");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			String selectSQL = "SELECT * From users where id=? and password=?";
+	public boolean isPasswordValid(String password) {
+		// ë¹„ë°€ë²ˆí˜¸ëŠ” ìµœì†Œ 8ì ì´ìƒ, ëŒ€ë¬¸ì, ì†Œë¬¸ì, ìˆ«ì, íŠ¹ìˆ˜ë¬¸ìê°€ ëª¨ë‘ í¬í•¨ë˜ì–´ì•¼ í•¨
+		String regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+		return password.matches(regex);
+	}
 
-			try {
-		    	pstmt=conn.prepareStatement(selectSQL);
-		    	pstmt.setString(1, uDTO.getId());
-		    	pstmt.setString(2, uDTO.getPassword());
-		    	rs = pstmt.executeQuery();
-		    	 ResultSet resultSet = pstmt.executeQuery();
-		    	//conn.rollback();
-		    	  if (resultSet.next()) {
-		                System.out.println("·Î±×ÀÎ ¼º°ø");
-		            } else {
-		                System.out.println("·Î±×ÀÎ ½ÇÆĞ");
-		            }
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} finally {
-		     	 if(pstmt != null) {
-		     		 try {
-		     			 pstmt.close();
-		     		 } catch (SQLException e) {
-		     			 // TODO Auto-generated catch block
-		             
-		     		 }
-		     	 }
-		       if(conn!= null) {
-		          try {
-		             conn.close();
-		          }catch (SQLException e) {
-		       }
-		       }
-		   
-		    }
-				
-		 }
-	public void deleteUser(UserDTO uDTO) {
-	//4. SQL±¸¹® ¼Û½Å
+	// ì•„ì´ë”” ì¤‘ë³µê²€ì‚¬
+	public boolean isIdValid(String id) {
 		PreparedStatement pstmt = null;
 		Connection conn = null;
 		try {
-			conn=JDBC.connect();
+			conn = JDBC.connect();
 			System.out.println("connect");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		String deleteSQL="update users"
-				+ "set status=2"
-				+ "where id=? and password=?";
+
+		String selectSQL = "SELECT COUNT(*) FROM users WHERE id = ? AND STATUS = 1";
 		try {
-    	pstmt=conn.prepareStatement(deleteSQL);
-    	pstmt.setString(1, uDTO.getId());
-    	pstmt.setString(2, uDTO.getPassword());
-    	int rowcnt = pstmt.executeUpdate();
-    	System.out.println(rowcnt+"°Ç Ãß°¡ ¼º°ø");
-    	//conn.rollback();
+			pstmt = conn.prepareStatement(selectSQL);
+			pstmt.setString(1, id);
+			ResultSet rset = pstmt.executeQuery();
+			while (rset.next()) {
+				// ì¡´ì¬í•˜ë©´ 1ì´ìƒ ë¦¬í„´
+				if (rset.getInt(1) > 0) {
+					return false;
+				} else {
+					return true;
+				}
+
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (SQLException e) {
+				}
+			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+				}
+			}
+
+		}
+		return true;
+	}
+
+	public UserDTO login(UserDTO uDTO) {
+		// 4. SQLêµ¬ë¬¸ ì†¡ì‹ 
+		PreparedStatement pstmt = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		UserDTO user = null;	//ë¡œê·¸ì¸ ì‹¤íŒ¨ì‹œ null return
+
+		try {
+			conn = JDBC.connect();
+			System.out.println("connect");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		String selectSQL = "SELECT * From users where id=? and password=? AND STATUS = 1";
+
+		try {
+			pstmt = conn.prepareStatement(selectSQL);
+			pstmt.setString(1, uDTO.getId());
+			pstmt.setString(2, uDTO.getPassword());
+			rs = pstmt.executeQuery();
+			// conn.rollback();
+			if (rs.next()) {
+				System.out.println("ë¡œê·¸ì¸ ì„±ê³µ");
+
+				user = new UserDTO();
+				user.setUserId(rs.getInt(1));
+				user.setId(rs.getString(2));
+				user.setPassword(rs.getString(3));
+				user.setUserName(rs.getString(4));
+				user.setGender(rs.getInt(5));
+				user.setZipcode(rs.getString(7));
+
+			} else {
+				System.out.println("ë¡œê·¸ì¸ ì‹¤íŒ¨");
+
+			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-     	 if(pstmt != null) {
-     		 try {
-     			 pstmt.close();
-     		 } catch (SQLException e) {
-     			 // TODO Auto-generated catch block
-             
-     		 }
-     	 }
-       if(conn!= null) {
-          try {
-             conn.close();
-          }catch (SQLException e) {
-       }
-       }
-   
-    }
-		
- }
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+
+				}
+			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+				}
+			}
+
+		}
+		return user;
+	}
+
+	public void deleteUser(UserDTO uDTO) {
+		// 4. SQLêµ¬ë¬¸ ì†¡ì‹ 
+		PreparedStatement pstmt = null;
+		Connection conn = null;
+		try {
+			conn = JDBC.connect();
+			System.out.println("connect");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		String deleteSQL = "update users" + " set status=2" + " where id=? and password=? AND STATUS = 1";
+		try {
+			pstmt = conn.prepareStatement(deleteSQL);
+			pstmt.setString(1, uDTO.getId());
+			pstmt.setString(2, uDTO.getPassword());
+			int rowcnt = pstmt.executeUpdate();
+			System.out.println(rowcnt + "ê±´ ì¶”ê°€ ì„±ê³µ");
+			// conn.rollback();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (SQLException e) {
+				}
+			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+				}
+			}
+		}
+
+	}
+
 	public void updateUser(UserDTO uDTO) {
 		PreparedStatement pstmt = null;
 		Connection conn = null;
@@ -166,7 +225,7 @@ public class UserDAO {
 			e.printStackTrace();
 		}
 
-		String updateSQL = "UPDATE users SET password=? WHERE id=?";
+		String updateSQL = "UPDATE users SET password=? WHERE id=? AND STATUS = 1";
 
 		try {
 			pstmt = conn.prepareStatement(updateSQL);
@@ -176,9 +235,9 @@ public class UserDAO {
 			int rowCnt = pstmt.executeUpdate();
 
 			if (rowCnt > 0) {
-				System.out.println(rowCnt + "°Ç ¼öÁ¤ ¼º°ø");
+				System.out.println(rowCnt + "ê±´ ìˆ˜ì • ì„±ê³µ");
 			} else {
-				System.out.println("¼öÁ¤ ½ÇÆĞ");
+				System.out.println("ìˆ˜ì • ì‹¤íŒ¨");
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -199,36 +258,100 @@ public class UserDAO {
 			}
 		}
 	}
-	
-	
-	public void selectUser(String userId) {
-	
+
+	//ë‚˜ì˜ ì°œí•œì‹ë‹¹, íšŒì› ìƒì„¸ì •ë³´ ì—´ëŒ
+	public void selectUser(String id, String password) {
+		PreparedStatement pstmt = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		try {
+			conn = JDBC.connect();
+			System.out.println("connect");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		String selectSQL = "SELECT u.ID, u.PASSWORD, u.USER_NAME, u.GENDER, r.ZIPCODE, r.CITY_NAME, r.SI_GUN_GU, r.DONG_EUP_MYEON FROM USERS u JOIN REGIONS r ON u.ZIPCODE = r.ZIPCODE WHERE U.id = ? AND u.PASSWORD = ? AND u.STATUS = 1";
+
+		try {
+			pstmt = conn.prepareStatement(selectSQL);
+			pstmt.setString(1, id);
+			pstmt.setString(2, password);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) {
+				UserDTO user = new UserDTO();
+				user.setId(rs.getString("id"));
+				user.setPassword(rs.getString("PASSWORD"));
+				user.setUserName(rs.getString("USER_NAME"));
+				user.setGender(rs.getInt("GENDER"));
+
+				RegionDTO region = new RegionDTO();
+				region.setZipcode(rs.getString("ZIPCODE"));
+				region.setCityName(rs.getString("CITY_NAME"));
+				region.setSiGunGu(rs.getString("SI_GUN_GU"));
+				region.setDongEupMyeon(rs.getString("DONG_EUP_MYEON"));
+
+				user.setRegion(region);
+
+				System.out.println("íšŒì›ìƒì„¸ì •ë³´");
+				System.out.println(user);
+
+				System.out.println("íšŒì› ì°œ ëª©ë¡");
+				new FavoriteDAO().selectFavoritesByUserId(id);
+			}else {
+				System.out.println("ë¹„ë°€ë²ˆí˜¸ê°€ ì˜ëª»ë˜ì—ˆìŠµë‹ˆë‹¤.");
+				return;
+			}
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+
+				}
+			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+				}
+			}
+
+		}
 	}
-	
 
 	public static void main(String[] args) {
-//		String id="id1";
-//		String password = "1233";
-//		String userName = "ÀÌ";
-//		int gender=1;
-//		String zipcode="07217";
-//		UserDTO uDTO = new UserDTO();
+//      String id="id1";
+//      String password = "1233";
+//      String userName = "ì´";
+//      int gender=1;
+//      String zipcode="07217";
+//      UserDTO uDTO = new UserDTO();
 
-//		public void join(String id, int userId, String password, String userName, int gerder, int status, String zipcode) {
+//      public void join(String id, int userId, String password, String userName, int gerder, int status, String zipcode) {
 
-		
-		//°´Ã¼ »ı¼ºÇØ¼­ ·Î±×ÀÎ Å×½ºÆ®
+		// ê°ì²´ ìƒì„±í•´ì„œ ë¡œê·¸ì¸ í…ŒìŠ¤íŠ¸
 		UserDAO uDAO = new UserDAO();
-		UserDTO uDTO = new UserDTO();
-//		uDAO.join(uDTO);
-//		uDTO.setId("id1");
-//		uDTO.setPassword("1233");
-//		uDAO.login(uDTO);
-		uDAO.updateUser(uDTO);
+		UserDTO userInfo = new UserDTO();
+//      uDAO.join(uDTO);
+//      uDTO.setId("id1");
+//      uDTO.setPassword("12334");
+		// uDAO.login(uDTO);
+		// uDAO.updateUser(uDTO);
+//      uDAO.deleteUser(uDTO);
+
+		// ë¹„ë°€ë²ˆí˜¸ëŠ” ìµœì†Œ 8ì ì´ìƒ, ëŒ€ë¬¸ì, ì†Œë¬¸ì, ìˆ«ì, íŠ¹ìˆ˜ë¬¸ìê°€ ëª¨ë‘ í¬í•¨ë˜ì–´ì•¼ í•¨
+		// íšŒì› í˜•ì‹ USER_ID, ID, PASSWORD, USER_NAME, GENDER,STATUS,ZIPCODE
+//		userInfo = new UserDTO("id1", "Test1234!", "test11111", 2, "07217");// ê°€ì… ë°ì´í„°
+//		uDAO.join(userInfo);
+
+		uDAO.selectUser("danbi52600", "danbi123");	//íšŒì› ìƒì„¸ë³´ê¸°
+
 	}
+
 }
-
-	
-
-
-
