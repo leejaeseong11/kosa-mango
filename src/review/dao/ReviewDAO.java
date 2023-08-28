@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 
 import jdbc.JDBC;
 import review.dto.ReviewDTO;
@@ -14,15 +13,16 @@ public class ReviewDAO {
 	private Connection conn = null;
 	PreparedStatement pstmt = null;
 
+	// review_id는 oralce sequence로 채운다
 	public void insertReview(ReviewDTO reviewDTO) {
-		String insertSQL = "INSERT INTO reviews (review_id, user_id, restaurant_id, review_content, rating, write_Time) VALUES (reviews_seq.NEXTVAL,?, ?, ?, ?,sysdate)";
+		String insertSQL = "INSERT INTO reviews (review_id, review_content, rating, write_Time, restaurant_id, user_id) VALUES (reviews_seq.NEXTVAL,?, ?,sysdate,?,?)";
 		try {
 			conn = JDBC.connect();
 			pstmt = conn.prepareStatement(insertSQL);
-			pstmt.setInt(1, reviewDTO.getId());
-			pstmt.setInt(2, reviewDTO.getRestaurantId());
-			pstmt.setString(3, reviewDTO.getContent());
-			pstmt.setInt(4, reviewDTO.getRating());
+			pstmt.setString(1, reviewDTO.getContent());
+			pstmt.setInt(2, reviewDTO.getRating());
+			pstmt.setInt(3, reviewDTO.getRestaurantId());
+			pstmt.setInt(4, reviewDTO.getUserId());
 			pstmt.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -44,14 +44,14 @@ public class ReviewDAO {
 		}
 	}
 
+	// review_id를 매개변수로 받아서 목록의 review번호와 일치하면 삭제 reviewId는 review목록. 사용자 정보화면으로
+	// 이동하면 사용자가 작성한 리뷰목록이 나옴, 1,2,3..이렇게 그래서 그 번호를 입력받으면 번호에 해당하는 리뷰 삭제
+	// @param id review목록의 번호
 	public void deleteReview(int id) {
-		// reviewId는 review목록. 사용자 정보화면으로 이동하면 사용자가 작성한 리뷰목록이 나옴, 1,2,3..이렇게 그래서 그 번호를
-		// 입력받으면 번호에 해당하는 리뷰 삭제
-		String deleteSQL = "DELETE FROM reviews WHERE reviewId=?";
+		String deleteSQL = "DELETE FROM reviews WHERE review_id=?";
 		try {
 			conn = JDBC.connect();
 			pstmt = conn.prepareStatement(deleteSQL);
-			// 사용자한테 입력받을 값, 임시로 이렇게 한 거임
 			pstmt.setInt(1, id);
 			pstmt.executeUpdate();
 		} catch (Exception e) {
@@ -75,12 +75,12 @@ public class ReviewDAO {
 	}
 
 	// 사용자 화면에서 본인이 작성한 리뷰목록을 보여줌, 1번 리뷰를 선택하면 1번 리뷰를 수정 가능
+	// @param content review내용, id review목록의 번호
 	public void updateReview(String content, int id) {
-		String updateSQL = "UPDATE reviews SET content = ? WHERE id=?";
+		String updateSQL = "UPDATE reviews SET review_content = ? WHERE user_id=?";
 		try {
 			conn = JDBC.connect();
 			pstmt = conn.prepareStatement(updateSQL);
-			// 사용자한테 입력받을 값, 임시로 이렇게 한 거임
 			pstmt.setString(1, content);
 			pstmt.setInt(2, id);
 			pstmt.executeUpdate();
@@ -105,7 +105,10 @@ public class ReviewDAO {
 	}
 
 	// database에서 rating을 얻어와야 함, 그 후 점수별로 review를 보여줘야 함
-	public ArrayList<ReviewDTO> selectCategorizedRating(int restaurantId, int rating) {
+	// @param restaurantId, rating
+	// @return 점수별로 review 출력
+	// pageSize는 목록의 번호, main class로부터 받아옴
+	public ArrayList<ReviewDTO> selectCategorizedRating(int pageSize, int rating, int restaurantId) {
 		String selectCategorizedSQL = "SELECT rating, review_content, write_time from reviews where restaurant_id=? and rating =?";
 		ArrayList<ReviewDTO> categorizedReviews = new ArrayList<>();
 		try {
@@ -147,22 +150,29 @@ public class ReviewDAO {
 	}
 
 	// restaurant로 이동하면 그 restaurant에 해당하는 review들만 출력
-	public ArrayList<ReviewDTO> selectReviewByRestaurant(String restaurantId, int index) {
-		String selectByRestaurantSQL = "SELECT userId, content, rating, writingTime FROM reviews WHERE restaurantId = ? LIMIT ?, 10";
+	// @param restaurantId 식당 번호, index 목록번호
+	// @return restaurantReviews, 반환값 ArrayList<ReviewDTO>
+	public ArrayList<ReviewDTO> selectReviewByRestaurant(int pageSize, int restaurantId, int index) {
+		String selectByRestaurantSQL = "SELECT *\r\n" + "FROM (SELECT ROWNUM rn, a.*\r\n" + "          FROM ( \r\n"
+				+ "          SELECT user_id, review_content, rating, write_time\r\n" + "          FROM reviews \r\n"
+				+ "          WHERE restaurant_id = ?)  a\r\n" + "          )\r\n" + "WHERE rn BETWEEN ? AND ?";
 		ArrayList<ReviewDTO> restaurantReviews = new ArrayList<>();
+		int sizeA = 1 + pageSize * (index - 1);
+		int sizeB = pageSize * index;
 		try {
 			conn = JDBC.connect();
 			pstmt = conn.prepareStatement(selectByRestaurantSQL);
-			pstmt.setString(1, restaurantId);
-			pstmt.setInt(2, index * 10); // 10개씩 페이징 처리
+			pstmt.setInt(1, restaurantId);
+			pstmt.setInt(2, sizeA);
+			pstmt.setInt(3, sizeB);
 			ResultSet rs = pstmt.executeQuery();
 
 			while (rs.next()) {
 				ReviewDTO reviewDTO = new ReviewDTO();
-				reviewDTO.setUserId(rs.getInt("userId"));
-				reviewDTO.setContent(rs.getString("content"));
+				reviewDTO.setUserId(rs.getInt("user_id"));
+				reviewDTO.setContent(rs.getString("review_content"));
 				reviewDTO.setRating(rs.getInt("rating"));
-				reviewDTO.setWritingTime(rs.getDate("writingTime"));
+				reviewDTO.setWritingTime(rs.getDate("write_time"));
 				restaurantReviews.add(reviewDTO);
 			}
 		} catch (Exception e) {
@@ -187,21 +197,25 @@ public class ReviewDAO {
 	}
 
 	// 사용자 화면에서 내가 쓴 리뷰들만 출력
-	public ArrayList<ReviewDTO> selectReviewByUser(String userId) {
-		String selectByUserSQL = "SELECT restaurantId, content, rating, writingTime FROM reviews WHERE userId = ?";
+	// @param userId
+	// @return
+	public ArrayList<ReviewDTO> selectReviewByUser(int pageSize, int userId) {
+		String selectByUserSQL = "SELECT restaurant_id, review_content, rating, write_time, user_id FROM reviews WHERE user_id = ?";
 		ArrayList<ReviewDTO> userReviews = new ArrayList<>();
 		try {
 			conn = JDBC.connect();
 			pstmt = conn.prepareStatement(selectByUserSQL);
-			pstmt.setString(1, userId);
+			pstmt.setInt(1, userId);
 			ResultSet rs = pstmt.executeQuery();
 
 			while (rs.next()) {
 				ReviewDTO reviewDTO = new ReviewDTO();
-				reviewDTO.setRestaurantId(rs.getInt("restaurantId"));
-				reviewDTO.setContent(rs.getString("content"));
+				reviewDTO.setRestaurantId(rs.getInt("restaurant_id"));
+				reviewDTO.setContent(rs.getString("review_content"));
 				reviewDTO.setRating(rs.getInt("rating"));
-				reviewDTO.setWritingTime(rs.getDate("writingTime"));
+				reviewDTO.setWritingTime(rs.getDate("write_time"));
+				reviewDTO.setUserId(rs.getInt("user_id"));
+
 				userReviews.add(reviewDTO);
 			}
 		} catch (Exception e) {
@@ -223,19 +237,5 @@ public class ReviewDAO {
 			}
 		}
 		return userReviews;
-	}
-
-	public static void main(String[] args) {
-		ReviewDAO reviewDAO = new ReviewDAO();
-		List<ReviewDTO> list = reviewDAO.selectCategorizedRating(2,5);
-		System.out.println(list);
-//		
-//		int userId = 1;
-//		int restId = 2;
-//		int rating = 5;
-//		String content = "good";
-//		ReviewDTO dto = new ReviewDTO(0, content, rating, null, userId, restId);
-//		reviewDAO.insertReview(dto);
-		
 	}
 }
