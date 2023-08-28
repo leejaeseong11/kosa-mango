@@ -16,9 +16,24 @@ import java.util.HashSet;
 
 public class RestaurantDAO {
     private int restaurantCount;
+
+    /**
+     * 검색 메서드 호출 후 해당 메서드를 호출해야 함
+     * @return 전체 식당 개수 반환
+     * @throws FindException
+     */
     public int getRestaurantCount() throws FindException {
         return restaurantCount;
     }
+
+    /**
+     * 검색 키워드가 식당 이름, 지역, 카테고리, 메뉴에 포함되어 있는 식당 리스트 반환
+     * @param word 검색 키워드
+     * @param pageSize 출력될 식당 리스트의 수
+     * @param index 출력될 페이지 인덱스
+     * @return 식당 DTO
+     * @throws FindException
+     */
     public ArrayList<RestaurantDTO> searchRestaurants(String word, int pageSize, int index) throws FindException {
         ArrayList<RestaurantDTO> returnedRestaurants = new ArrayList<>();
 
@@ -56,7 +71,7 @@ public class RestaurantDAO {
             sql = "SELECT *" +
                     " FROM (SELECT ROWNUM rn, r2.*" +
                     " FROM (SELECT ROWNUM, r1.*" +
-                    " FROM (SELECT res.restaurant_id, res.restaurant_name, NVL(res.rating_score, -1), reg.city_name, reg.si_gun_gu, LISTAGG(c.category_name, ',')" +
+                    " FROM (SELECT res.restaurant_id, res.restaurant_name, NVL(res.rating_score, -1.0), reg.city_name, reg.si_gun_gu, LISTAGG(c.category_name, ',')" +
                     " FROM restaurants res" +
                     " JOIN regions reg ON res.zipcode = reg.zipcode" +
                     " JOIN restaurants_categories rc ON res.restaurant_id = rc.restaurant_id" +
@@ -136,6 +151,12 @@ public class RestaurantDAO {
 
         return returnedRestaurants;
     }
+
+    /**
+     * @param userId 유저의 id
+     * @return 유저의 집 주소와 동일한 랜덤한 식당 DTO
+     * @throws FindException
+     */
     public RestaurantDTO randomRestaurantNearMyHouse(int userId) throws FindException {
         RestaurantDTO returnedRestaurant = new RestaurantDTO();
 
@@ -149,24 +170,25 @@ public class RestaurantDAO {
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
-
         try {
             String sql = " SELECT *" +
-                         " FROM (SELECT res.restaurant_id, res.restaurant_name, res.view_count, res.run_time, res.detail_address, res.zipcode, reg.city_name, reg.si_gun_gu, reg.dong_eup_myeon, LISTAGG(c.category_name, ', '), res.rating_score" +
-                         " FROM restaurants res" +
-                         " JOIN regions reg ON res.zipcode = reg.zipcode" +
-                         " JOIN restaurants_categories rc ON res.restaurant_id = rc.restaurant_id" +
-                         " JOIN categories c ON c.category_id = rc.category_id" +
-                         " AND EXISTS (SELECT 1" +
-                         " FROM users u" +
-                         " JOIN regions user_reg ON u.zipcode = user_reg.zipcode" +
-                         " WHERE user_reg.city_name = reg.city_name" +
-                         " AND u.user_id = 1" +
-                         " AND user_reg.si_gun_gu = reg.si_gun_gu" +
-                         ")" +
-                         " GROUP BY res.restaurant_id, res.restaurant_name, res.view_count, res.run_time, res.detail_address, res.zipcode, reg.city_name, reg.si_gun_gu, reg.dong_eup_myeon, res.rating_score" +
-                         " ORDER BY DBMS_RANDOM.RANDOM" +
-                         ") WHERE ROWNUM = 1";
+                         " FROM (SELECT *"+
+                         " FROM (SELECT res.restaurant_id, res.restaurant_name, res.view_count, res.run_time, res.detail_address, res.zipcode, reg.city_name, reg.si_gun_gu, reg .dong_eup_myeon, LISTAGG(c.category_name, ','), NVL(res.rating_score, -1)"+
+                         " FROM restaurants res"+
+                         " JOIN regions reg ON res.zipcode = reg.zipcode"+
+                         " JOIN restaurants_categories rc ON res.restaurant_id = rc.restaurant_id"+
+                         " JOIN categories c ON c.category_id = rc.category_id"+
+                         " AND EXISTS (SELECT 1"+
+                         " FROM users u"+
+                         " JOIN regions user_reg ON u.zipcode = user_reg.zipcode"+
+                         " WHERE user_reg.city_name = reg.city_name"+
+                         " AND u.user_id = 1"+
+                         " AND user_reg.si_gun_gu = reg.si_gun_gu)"+
+                         " GROUP BY res.restaurant_id, res.restaurant_name, res.view_count, res.run_time, res.detail_address, res.zipcode, reg.city_name, reg.si_gun_gu, reg .dong_eup_myeon, res.rating_score"+
+                         " ORDER BY DBMS_RANDOM.RANDOM)"+
+                         " WHERE ROWNUM = 1) ran"+
+                         " JOIN menu m ON ran.restaurant_id = m.restaurant_id";
+
             pstmt = conn.prepareStatement(sql);
 
             rs = pstmt.executeQuery();
@@ -175,18 +197,18 @@ public class RestaurantDAO {
                 rDTO.setId(rs.getInt(1));
                 rDTO.setName(rs.getString(2));
                 rDTO.setViewCount(rs.getInt(3));
-                rDTO.setRatingScore(rs.getDouble(4));
                 rDTO.setDetailAddress(rs.getString(5));
-                rDTO.setRunTime(rs.getString(6));
+                rDTO.setRunTime(rs.getString(4));
                 RegionDTO regDTO = new RegionDTO();
-                regDTO.setZipcode(rs.getString(7));
-                regDTO.setCityName(rs.getString(8));
-                regDTO.setSiGunGu(rs.getString(9));
-                regDTO.setDongEupMyeon(rs.getString(10));
+                regDTO.setZipcode(rs.getString(6));
+                regDTO.setCityName(rs.getString(7));
+                regDTO.setSiGunGu(rs.getString(8));
+                regDTO.setDongEupMyeon(rs.getString(9));
                 rDTO.setRegion(regDTO);
 
                 ArrayList<CategoryDTO> categoriesList = new ArrayList<>();
-                String[] categoryNames = rs.getString(11).split(",");
+                String[] categoryNames = rs.getString(10).split(",");
+
                 HashSet<String> categoryNamesSet = new HashSet<>();
 
                 for(int i = 0; i < categoryNames.length; i++) {
@@ -199,7 +221,7 @@ public class RestaurantDAO {
                     categoriesList.add(c);
                 }
                 returnedRestaurant.setCategories(categoriesList);
-                rDTO.setRatingScore(rs.getDouble(12));
+                rDTO.setRatingScore(rs.getDouble(11));
 
                 sql = " SELECT m.*"+
                       " FROM menu m"+
@@ -209,21 +231,16 @@ public class RestaurantDAO {
                 pstmt.setInt(1, rDTO.getId());
                 rs = pstmt.executeQuery();
                 ArrayList<MenuDTO> menuList = new ArrayList<>();
-                while (rs.next()) {
+                do {
                     MenuDTO mDTO = new MenuDTO();
-                    mDTO.setId(rs.getInt(1));
-                    mDTO.setName(rs.getString(2));
-                    mDTO.setPrice(rs.getInt(3));
-                    mDTO.setRestaurantId(rs.getInt(4));
+                    mDTO.setId(rs.getInt(12));
+                    mDTO.setName(rs.getString(13));
+                    mDTO.setPrice(rs.getInt(14));
+                    mDTO.setRestaurantId(rs.getInt(15));
                     menuList.add(mDTO);
-                }
+                } while (rs.next());
                 rDTO.setMenu(menuList);
             }
-
-//            ReviewDAO rDAO = new ReviewDAO();
-//            rDTO.setReviews(rDAO.selectReviewByRestaurant(rDTO.getId(), 1));
-
-
         } catch (SQLException e) {
             e.printStackTrace();
             throw new FindException("검색에 실패했습니다.");
