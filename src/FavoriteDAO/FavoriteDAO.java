@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import exception.AddException;
 import exception.FindException;
 import jdbc.JDBC;
 import restaurant.dto.RestaurantDTO;
@@ -65,7 +66,7 @@ public class FavoriteDAO {
 	}
 
 	// 찜 추가
-	public void insertFavorites(int userId, int restaurantId) {
+	public void insertFavorites(int userId, int restaurantId) throws AddException {
 		PreparedStatement pstmt = null;
 		Connection conn = null;
 		try {
@@ -75,28 +76,27 @@ public class FavoriteDAO {
 			e.printStackTrace();
 		}
 
-
 		String insertSQL = "INSERT INTO FAVORITES values(?, ?)";
 		try {
 			pstmt = conn.prepareStatement(insertSQL);
 			pstmt.setInt(1, userId);
 			pstmt.setInt(2, restaurantId);
-			int rowcnt = pstmt.executeUpdate();
-			System.out.println(rowcnt + "찜 완료 되었습니다.");
-			// conn.rollback();
+			pstmt.executeUpdate();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			throw new AddException("찜 목록 입력에 실패했습니다.");
 		} finally {
 			if (pstmt != null) {
 				try {
 					pstmt.close();
 				} catch (SQLException e) {
+					throw new AddException("DB 연결에 실패했습니다.");
 				}
 			}
 			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
+					throw new AddException("DB 연결에 실패했습니다.");
 				}
 			}
 
