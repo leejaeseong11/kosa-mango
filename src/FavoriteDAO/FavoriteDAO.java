@@ -6,83 +6,62 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import exception.FindException;
 import jdbc.JDBC;
 import restaurant.dto.RestaurantDTO;
 
 public class FavoriteDAO {
 
-	public static void main(String[] args) {
-		FavoriteDAO fa = new FavoriteDAO();
-
-		//식당 찜 등록
-		//fa.insertFavorites(1, 3);
-
-		//찜 목록 출력
-		ArrayList<RestaurantDTO> list = fa.selectFavoritesByUserId("danbi52600");
-
-
-
-	}
-
 	// 회원아이디 찜 식당 조회
-	public ArrayList<RestaurantDTO> selectFavoritesByUserId(String id) {
+	public ArrayList<String> selectFavoritesByUserId(int userId) throws FindException {
 		PreparedStatement pstmt = null;
 		Connection conn = null;
 		ResultSet rs = null;
-		ArrayList<RestaurantDTO> list = new ArrayList<RestaurantDTO>();
+		ArrayList<String> list = new ArrayList<>();
 
 		try {
 			conn = JDBC.connect();
-			System.out.println("connect");
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new FindException("DB 연결에 실패했습니다.");
 		}
-		String selectSQL = "SELECT r.RESTAURANT_NAME, r.VIEW_COUNT, r.DETAIL_ADDRESS, r.RUN_TIME FROM FAVORITES f JOIN USERS u ON f.USER_ID = u.USER_ID JOIN RESTAURANTS r ON f.RESTAURANT_ID = r.RESTAURANT_ID "
-						+ "WHERE U.id = ?";
+		String selectSQL = "SELECT r.RESTAURANT_NAME FROM FAVORITES f JOIN USERS u ON f.USER_ID = u.USER_ID JOIN RESTAURANTS r ON f.RESTAURANT_ID = r.RESTAURANT_ID " + "WHERE U.id = ?";
 
 		try {
 			pstmt = conn.prepareStatement(selectSQL);
-			pstmt.setString(1, id);
+			pstmt.setInt(1, userId);
 			rs = pstmt.executeQuery();
 
 			while (rs.next()) {
-				//식당 정보 저장
-				RestaurantDTO restaurant = new RestaurantDTO();
-				restaurant.setName(rs.getString(1));
-				restaurant.setViewCount(rs.getInt(2));
-				restaurant.setDetailAddress(rs.getString(3));
-				restaurant.setRunTime(rs.getString(4));
-
-				list.add(restaurant);	//검색 결과 리스트 추가
-			}
-
-			for(RestaurantDTO r : list) {
-				System.out.println(r);	//형식에 맞는 toString 구현할것
+				list.add(rs.getString(1)); // 검색 결과 리스트 추가
 			}
 
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new FindException("찜 목록 조회에 실패했습니다.");
 		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					throw new FindException("DB 연결에 실패했습니다.");
+				}
+			}
 			if (pstmt != null) {
 				try {
 					pstmt.close();
 				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-
+					throw new FindException("DB 연결에 실패했습니다.");
 				}
 			}
 			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
+					throw new FindException("DB 연결에 실패했습니다.");
 				}
 			}
-
 		}
 
 		return list;
-
 	}
 
 	// 찜 추가
