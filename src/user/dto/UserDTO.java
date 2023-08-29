@@ -18,13 +18,4 @@ public class UserDTO {
 	private ArrayList<RestaurantDTO> restaurants;
 	private RegionDTO region;
 
-
-	public UserDTO(int id, String password, String userName, int gender, String zipcode) {
-		super();
-		this.id = id;
-		this.password = password;
-		this.userName = userName;
-		this.gender = gender;
-		this.zipcode = zipcode;
-	}
 }

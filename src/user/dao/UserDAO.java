@@ -5,66 +5,56 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import FavoriteDAO.FavoriteDAO;
 import exception.AddException;
 import exception.FindException;
 import exception.ModifyException;
-import exception.RemoveException;
 import jdbc.JDBC;
 import region.dto.RegionDTO;
 import user.dto.UserDTO;
 
 public class UserDAO {
-
-	public void join(UserDTO uDTO) throws AddException{
+	public void join(UserDTO uDTO) throws AddException, FindException {
 		PreparedStatement pstmt = null;
 		Connection conn = null;
 		try {
 			conn = JDBC.connect();
-			System.out.println("connect");
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new AddException("DB 연결에 실패했습니다.");
 		}
 
-		// ���대�� 寃���
-		if (!isIdValid(uDTO.getId())) {
-			
+		if (!isIdValid(uDTO.getUserId())) {
 			throw new AddException("아이디가 중복되었습니다.");
 		}
 
 		if (!isPasswordValid(uDTO.getPassword())) {
-			throw new AddException("비밀번호가 중복되었습니다."):
+			throw new AddException("비밀번호는 8자리 이상이어야 하며, 반드시 숫자가 한 개 이상 포함되어야 합니다.");
 		}
 
 		String insertSQL = "INSERT INTO users ( USER_ID, ID, PASSWORD, USER_NAME, GENDER,STATUS,ZIPCODE ) \r\n"
 				+ "            values (seq_user_id.NEXTVAL,        ?,          ?,           ?,     ?,     1,     ?)";
 		try {
 			pstmt = conn.prepareStatement(insertSQL);
-			pstmt.setString(1, uDTO.getId());
+			pstmt.setString(1, uDTO.getUserId());
 			pstmt.setString(2, uDTO.getPassword());
 			pstmt.setString(3, uDTO.getUserName());
 			pstmt.setInt(4, uDTO.getGender());
 			pstmt.setString(5, uDTO.getZipcode());
-			int rowcnt = pstmt.executeUpdate();
+			pstmt.executeUpdate();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			throw new AddException("회원 가입에 실패했습니다.");
 		} finally {
 			if (pstmt != null) {
 				try {
 					pstmt.close();
 				} catch (SQLException e) {
+					throw new AddException("DB 종료에 실패했습니다.");
 				}
 			}
 			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
-				}
-			}
-				if (rs != null) {
-					try {
-					rs.close();
-				} catch (SQLException e) {
+					throw new AddException("DB 종료에 실패했습니다.");
 				}
 			}
 
@@ -73,20 +63,18 @@ public class UserDAO {
 	}
 
 	private boolean isPasswordValid(String password){
-		// 鍮�諛�踰��몃�� 理��� 8�� �댁��, ��臾몄��, ��臾몄��, �レ��, �뱀��臾몄��媛� 紐⑤�� �ы�⑤���댁�� ��
-		String regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+		// 최소 8자 이상, 숫자 1개 이상
+		String regex = "^(?=.*\\d).{8,}$";
 		return password.matches(regex);
 	}
 
-	// ���대�� 以�蹂듦���
 	private boolean isIdValid(String id) throws FindException{
 		PreparedStatement pstmt = null;
 		Connection conn = null;
 		try {
 			conn = JDBC.connect();
-			System.out.println("connect");
 		} catch (Exception e) {
-			throw new FindException("DB연결에 실패했습니다.");
+			throw new FindException("DB 연결에 실패했습니다.");
 		}
 
 		String selectSQL = "SELECT COUNT(*) FROM users WHERE id = ? AND STATUS = 1";
@@ -95,82 +83,77 @@ public class UserDAO {
 			pstmt.setString(1, id);
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
-				// 議댁�ы��硫� 1�댁�� 由ы��
 				if (rs.getInt(1) > 0) {
 					return false;
 				} else {
 					return true;
 				}
-
 			}
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			throw new FindException("DB 조회에 실패했습니다.");
 		} finally {
 			if (pstmt != null) {
 				try {
 					pstmt.close();
 				} catch (SQLException e) {
+					throw new FindException("DB 종료에 실패했습니다.");
 				}
 			}
 			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
+					throw new FindException("DB 종료에 실패했습니다.");
 				}
 			}
-
 		}
 		return true;
 	}
 
-	public UserDTO login(UserDTO uDTO) {
-		// 4. SQL援щЦ �≪��
+	public UserDTO login(UserDTO uDTO) throws FindException {
 		PreparedStatement pstmt = null;
 		Connection conn = null;
 		ResultSet rs = null;
-		UserDTO user = null;	//濡�洹몄�� �ㅽ�⑥�� null return
+		UserDTO user = null;
 
 		try {
 			conn = JDBC.connect();
-			System.out.println("connect");
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new FindException("DB 연결에 실패했습니다.");
 		}
 		String selectSQL = "SELECT * FROM users WHERE ID=? AND PASSWORD=? AND STATUS = 1";
 
 		try {
 			pstmt = conn.prepareStatement(selectSQL);
-			pstmt.setString(1, uDTO.getId());
+			pstmt.setString(1, uDTO.getUserId());
 			pstmt.setString(2, uDTO.getPassword());
 			rs = pstmt.executeQuery();
-			// conn.rollback();
+
 			if (rs.next()) {
 				user = new UserDTO();
-				user.setUserId(rs.getInt(1));
-				user.setId(rs.getString(2));
+				user.setId(rs.getInt(1));
+				user.setUserId(rs.getString(2));
 				user.setPassword(rs.getString(3));
 				user.setUserName(rs.getString(4));
 				user.setGender(rs.getInt(5));
 				user.setZipcode(rs.getString(7));
-
-			} else {
-
 			}
 		} catch (SQLException e) {
-			throw new FindException("로그인에 실패하셨습니다");
+			throw new FindException("로그인에 실패했습니다.");
 		} finally {
 			if (pstmt != null) {
 				try {
 					pstmt.close();
 				} catch (SQLException e) {
-
+					throw new FindException("DB 종료에 실패했습니다.");
 				}
 			}
 			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
+					throw new FindException("DB 종료에 실패했습니다.");
 				}
 			}
 
@@ -178,140 +161,138 @@ public class UserDAO {
 		return user;
 	}
 
-	public void deleteUser(UserDTO uDTO) {
-		// 4. SQL援щЦ �≪��
+	public void deleteUser(int user_id) throws ModifyException {
 		PreparedStatement pstmt = null;
 		Connection conn = null;
 		try {
 			conn = JDBC.connect();
-			System.out.println("connect");
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new ModifyException("DB 연결에 실패했습니다.");
 		}
-
 		try {
-			pstmt = conn.prepareStatement(deleteSQL);
-			pstmt.setString(1, uDTO.getId());
-			pstmt.setString(2, uDTO.getPassword());
-			int rowcnt = pstmt.executeUpdate();
-		} catch (SQLException e) {
-			throw new RemoveException("회원탈퇴에 실패하셨습니다.") ;
-		} finally {
-			if (pstmt != null) {
-				try {
-					pstmt.close();
-				} catch (SQLException e) {
-				}
-			}
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-				}
-			}
-		}
-
-	}
-
-	public void updateUser(UserDTO uDTO) {
-		PreparedStatement pstmt = null;
-		Connection conn = null;
-		if(!isPasswordValid(uDTO.getpassword))
-			throw new ModifyException("패스워드가 유효하지않습니다.");
-		try {
-			conn = JDBC.connect();
-			System.out.println("connect");
-		} catch (Exception e) {
-		
-		}
-
-		String updateSQL = "UPDATE users SET password=? WHERE id=? AND STATUS = 1";
-
-		try {
+			String updateSQL = "UPDATE users SET status = 2 WHERE user_id = ?";
 			pstmt = conn.prepareStatement(updateSQL);
-			pstmt.setString(1, uDTO.getPassword());
-			pstmt.setString(2, uDTO.getId());
-
-			int rowCnt = pstmt.executeUpdate();
-
-			
+			pstmt.setInt(1, user_id);
+			pstmt.executeUpdate();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			throw new ModifyException("회원 탈퇴에 실패하셨습니다.") ;
 		} finally {
 			if (pstmt != null) {
 				try {
 					pstmt.close();
 				} catch (SQLException e) {
-					e.printStackTrace();
+					throw new ModifyException("DB 종료에 실패했습니다.");
 				}
 			}
 			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
-					e.printStackTrace();
+					throw new ModifyException("DB 종료에 실패했습니다.");
 				}
 			}
 		}
 	}
 
-	//���� 李�������, ���� ���몄��蹂� �대��
-	public UserDTO selectUser(String id, String password) {
-    PreparedStatement pstmt = null;
-    Connection conn = null;
-    ResultSet rs = null;
-    UserDTO user = null;
+	public void updateUser(int userId, String password) throws FindException, ModifyException {
+		PreparedStatement pstmt = null;
+		Connection conn = null;
+		if(!isPasswordValid(password)) {
+			throw new FindException("패스워드가 유효하지않습니다.");
+		}
+		try {
+			conn = JDBC.connect();
+		} catch (Exception e) {
+			throw new ModifyException("DB 연결에 실패했습니다.");
+		}
 
-    try {
-        conn = JDBC.connect();
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
-    String selectSQL = "SELECT u.ID, u.PASSWORD, u.USER_NAME, u.GENDER, r.ZIPCODE, r.CITY_NAME, r.SI_GUN_GU, r.DONG_EUP_MYEON FROM USERS u JOIN REGIONS r ON u.ZIPCODE = r.ZIPCODE WHERE U.id = ? AND u.PASSWORD = ? AND u.STATUS = 1";
+		try {
+			String updateSQL = "UPDATE users SET password=? WHERE user_id=? AND STATUS = 1";
+			pstmt = conn.prepareStatement(updateSQL);
+			pstmt.setInt(1, userId);
+			pstmt.setString(2, password);
+			pstmt.executeUpdate();
 
-    try {
-        pstmt = conn.prepareStatement(selectSQL);
-        pstmt.setString(1, id);
-        pstmt.setString(2, password);
-        rs = pstmt.executeQuery();
+		} catch (SQLException e) {
+			throw new ModifyException("비밀번호 수정에 실패했습니다.");
+		} finally {
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (SQLException e) {
+					throw new ModifyException("DB 종료에 실패했습니다.");
+				}
+			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					throw new ModifyException("DB 종료에 실패했습니다.");
+				}
+			}
+		}
+	}
 
-        if (rs.next()) {
-            user = new UserDTO();
-            user.setId(rs.getString("id"));
-            user.setPassword(rs.getString("PASSWORD"));
-            user.setUserName(rs.getString("USER_NAME"));
-            user.setGender(rs.getInt("GENDER"));
+	public UserDTO selectUser(int userId, String password) throws FindException {
+		PreparedStatement pstmt = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		UserDTO user = null;
 
-            RegionDTO region = new RegionDTO();
-            region.setZipcode(rs.getString("ZIPCODE"));
-            region.setCityName(rs.getString("CITY_NAME"));
-            region.setSiGunGu(rs.getString("SI_GUN_GU"));
-            region.setDongEupMyeon(rs.getString("DONG_EUP_MYEON"));
-            user.setRegion(region);
+		try {
+			conn = JDBC.connect();
+		} catch (Exception e) {
+			throw new FindException("DB 연결에 실패했습니다.");
+		}
+		String selectSQL = "SELECT u.ID, u.PASSWORD, u.USER_NAME, u.GENDER, r.ZIPCODE, r.CITY_NAME, r.SI_GUN_GU, r.DONG_EUP_MYEON FROM USERS u JOIN REGIONS r ON u.ZIPCODE = r.ZIPCODE WHERE U.id = ? AND u.PASSWORD = ? AND u.STATUS = 1";
 
-            // 李� 紐⑸� 議고��
-            new FavoriteDAO().selectFavoritesByUserId(id);
-        }
+		try {
+			pstmt = conn.prepareStatement(selectSQL);
+			pstmt.setInt(1, userId);
+			pstmt.setString(2, password);
+			rs = pstmt.executeQuery();
 
-    } catch (SQLException e) {
-        e.printStackTrace();
-    } finally {
-        if (pstmt != null) {
-            try {
-                pstmt.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-        if (conn != null) {
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+			if (rs.next()) {
+				user = new UserDTO();
+				user.setId(rs.getInt("USER_ID"));
+				user.setPassword(rs.getString("PASSWORD"));
+				user.setUserName(rs.getString("USER_NAME"));
+				user.setGender(rs.getInt("GENDER"));
 
-    return user; // 議고���� ���� ��蹂대�� 諛���
-}
+				RegionDTO region = new RegionDTO();
+				region.setZipcode(rs.getString("ZIPCODE"));
+				region.setCityName(rs.getString("CITY_NAME"));
+				region.setSiGunGu(rs.getString("SI_GUN_GU"));
+				region.setDongEupMyeon(rs.getString("DONG_EUP_MYEON"));
+				user.setRegion(region);
+			}
+
+		} catch (SQLException e) {
+			throw new FindException("회원 검색에 실패했습니다.");
+		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					throw new FindException("DB 종료에 실패했습니다.");
+				}
+			}
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (SQLException e) {
+					throw new FindException("DB 종료에 실패했습니다.");
+				}
+			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					throw new FindException("DB 종료에 실패했습니다.");
+				}
+			}
+		}
+
+		return user;
+	}
 }
