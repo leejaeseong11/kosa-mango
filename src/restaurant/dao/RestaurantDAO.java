@@ -378,7 +378,7 @@ public class RestaurantDAO {
         return restaurantDetail;
     }
     
-    public ArrayList<RestaurantDTO> rankRestaurantsByCategory(String categoryId, int pageSize, int index) throws FindException {
+    public ArrayList<RestaurantDTO> rankRestaurantsByCategory(int categoryId, int pageSize, int index) throws FindException {
         ArrayList<RestaurantDTO> restaurantList = new ArrayList<>();
 
         Connection conn = null;
@@ -400,7 +400,7 @@ public class RestaurantDAO {
                     " WHERE rc.category_id = ?";
 
             pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, categoryId);
+            pstmt.setInt(1, categoryId);
             rs = pstmt.executeQuery();
             
             if (rs.next()) {
@@ -422,7 +422,7 @@ public class RestaurantDAO {
                     " WHERE rn BETWEEN ? AND ?";
 
             pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, categoryId);
+            pstmt.setInt(1, categoryId);
             pstmt.setInt(2, pageSize * (index - 1) + 1);
             pstmt.setInt(3, pageSize * index);
             rs = pstmt.executeQuery();
