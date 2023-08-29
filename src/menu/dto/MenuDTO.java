@@ -7,5 +7,5 @@ public class MenuDTO {
     private int id;
     private String name;
     private int price;
-    private String restaurantId;
+    private int restaurantId;
 }
