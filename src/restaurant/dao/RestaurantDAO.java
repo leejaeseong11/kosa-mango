@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import category.dto.CategoryDTO;
 import exception.FindException;
@@ -162,8 +163,6 @@ public class RestaurantDAO {
                 RegionDTO r = new RegionDTO();
                 restaurantDetail.setId(rs.getInt("restaurant_id"));
                 restaurantDetail.setName(rs.getString("restaurant_name"));
-                double ratingScore = rs.getDouble(3);
-                restaurantDetail.setRatingScore(Math.round(ratingScore * 100) / 100.0);
                 restaurantDetail.setViewCount(rs.getInt("view_count"));
                 restaurantDetail.setRunTime(rs.getString("run_time"));
                 restaurantDetail.setDetailAddress(rs.getString("detail_address"));
@@ -173,18 +172,39 @@ public class RestaurantDAO {
                 r.setDongEupMyeon(rs.getString("dong_eup_myeon"));
                 restaurantDetail.setRegion(r);
                 
-                CategoryDTO c = new CategoryDTO();
-                c.setName(rs.getString("category_name"));
                 ArrayList<CategoryDTO> categoriesList = new ArrayList<>();
-                categoriesList.add(c);
+                String[] categoryNames = rs.getString("category_name").split(",");
+
+                HashSet<String> categoryNamesSet = new HashSet<>();
+
+                for(int i = 0; i < categoryNames.length; i++) {
+                    categoryNamesSet.add(categoryNames[i]);
+                }
+
+                for(int i = 0; i < categoryNamesSet.size(); i++) {
+                    CategoryDTO c = new CategoryDTO();
+                    c.setName(categoryNames[i]);
+                    categoriesList.add(c);
+                }
                 restaurantDetail.setCategories(categoriesList);
-                
-                MenuDTO m = new MenuDTO();
-                m.setId(rs.getInt("menu_id"));
-                m.setName(rs.getString("menu_name"));
-                m.setPrice(rs.getInt("price"));
+                restaurantDetail.setRatingScore(rs.getDouble(11));
+
+                sql = " SELECT m.*"+
+                      " FROM menu m"+
+                      " JOIN restaurants res ON res.restaurant_id = m.restaurant_id" +
+                      " WHERE res.restaurant_id = ?";
+                pstmt = conn.prepareStatement(sql);
+                pstmt.setInt(1, restaurantDetail.getId());
+                rs = pstmt.executeQuery();
                 ArrayList<MenuDTO> menuList = new ArrayList<>();
-                menuList.add(m);
+                do {
+                    MenuDTO mDTO = new MenuDTO();
+                    mDTO.setId(rs.getInt(12));
+                    mDTO.setName(rs.getString(13));
+                    mDTO.setPrice(rs.getInt(14));
+                    mDTO.setRestaurantId(rs.getInt(15));
+                    menuList.add(mDTO);
+                } while (rs.next());
                 restaurantDetail.setMenu(menuList);
             }
 
@@ -218,7 +238,7 @@ public class RestaurantDAO {
         return restaurantDetail;
     }
     
-    public ArrayList<RestaurantDTO> rankRestaurantsByCategory(String categoryId, int index) throws FindException {
+    public ArrayList<RestaurantDTO> rankRestaurantsByCategory(String categoryId, int pageSize, int index) throws FindException {
         ArrayList<RestaurantDTO> restaurantList = new ArrayList<>();
 
         Connection conn = null;
@@ -231,18 +251,42 @@ public class RestaurantDAO {
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         try {
-            String sql = "SELECT res.restaurant_id, res.restaurant_name, NVL(res.rating_score, -1), res.view_count, res.run_time, reg.city_name, reg.si_gun_gu, reg.dong_eup_myeon, res.detail_address" +
-                    " FROM restaurants res" +
+            String sql = "SELECT COUNT(distinct res.restaurant_id)" +
+                    " FROM restaurants res " +
                     " JOIN regions reg ON res.zipcode = reg.zipcode" +
                     " JOIN restaurants_categories rc ON res.restaurant_id = rc.restaurant_id" +
-                    " WHERE rc.category_id = ?" +
-                    " ORDER BY res.rating_score DESC, res.view_count DESC, res.restaurant_id" +
-                    " FETCH FIRST " + index + " ROWS ONLY";
+                    " JOIN categories c ON c.category_id = rc.category_id" +
+                    " JOIN menu m ON m.restaurant_id = res.restaurant_id" +
+                    " WHERE rc.category_id = ?";
 
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, categoryId);
             rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                this.restaurantCount = rs.getInt(1);
+            }
 
+            sql = "SELECT *" +
+                    " FROM (SELECT ROWNUM rn, r2.*" +
+                    " FROM (SELECT ROWNUM, r1.*" +
+                    " FROM (SELECT res.restaurant_id, res.restaurant_name, NVL(res.rating_score, -1.0), reg.city_name, reg.si_gun_gu, LISTAGG(c.category_name, ',')" +
+                    " FROM restaurants res" +
+                    " JOIN regions reg ON res.zipcode = reg.zipcode" +
+                    " JOIN restaurants_categories rc ON res.restaurant_id = rc.restaurant_id" +
+                    " JOIN categories c ON c.category_id = rc.category_id" +
+                    " JOIN menu m ON m.restaurant_id = res.restaurant_id" +
+                    " WHERE rc.category_id = ?" +
+                    " GROUP BY res.restaurant_id, res.restaurant_name, res.rating_score, reg.city_name, reg.si_gun_gu, view_count" +
+                    " ORDER BY rating_score desc, view_count desc, res.restaurant_id) r1) r2 )" +
+                    " WHERE rn BETWEEN ? AND ?";
+
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, categoryId);
+            pstmt.setInt(2, pageSize * (index - 1) + 1);
+            pstmt.setInt(3, pageSize * index);
+            rs = pstmt.executeQuery();
+            
             while (rs.next()) {
                 RestaurantDTO restaurantDTO = new RestaurantDTO();
                 RegionDTO r = new RegionDTO();
@@ -258,6 +302,20 @@ public class RestaurantDAO {
                 r.setDongEupMyeon(rs.getString("dong_eup_myeon"));
                 restaurantDTO.setRegion(r);
 
+                ArrayList<CategoryDTO> categoriesList = new ArrayList<>();
+                String[] categoryNames = rs.getString("category_name").split(",");
+                HashSet<String> categoryNamesSet = new HashSet<>();
+
+                for(int i = 0; i < categoryNames.length; i++) {
+                    categoryNamesSet.add(categoryNames[i]);
+                }
+
+                for(int i = 0; i < categoryNamesSet.size(); i++) {
+                    CategoryDTO c = new CategoryDTO();
+                    c.setName(categoryNames[i]);
+                    categoriesList.add(c);
+                }
+                restaurantDTO.setCategories(categoriesList);
                 restaurantList.add(restaurantDTO);
             }
 
@@ -291,7 +349,6 @@ public class RestaurantDAO {
 
         return restaurantList;
     }
-
-
+    
 
 }
