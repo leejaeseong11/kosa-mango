@@ -57,9 +57,7 @@ public class UserDAO {
 					throw new AddException("DB 종료에 실패했습니다.");
 				}
 			}
-
 		}
-
 	}
 
 	private boolean isPasswordValid(String password){
@@ -161,7 +159,7 @@ public class UserDAO {
 		return user;
 	}
 
-	public void deleteUser(int user_id) throws ModifyException {
+	public void deleteUser(int userId) throws ModifyException {
 		PreparedStatement pstmt = null;
 		Connection conn = null;
 		try {
@@ -172,7 +170,7 @@ public class UserDAO {
 		try {
 			String updateSQL = "UPDATE users SET status = 2 WHERE user_id = ?";
 			pstmt = conn.prepareStatement(updateSQL);
-			pstmt.setInt(1, user_id);
+			pstmt.setInt(1, userId);
 			pstmt.executeUpdate();
 		} catch (SQLException e) {
 			throw new ModifyException("회원 탈퇴에 실패하셨습니다.") ;
@@ -233,7 +231,7 @@ public class UserDAO {
 		}
 	}
 
-	public UserDTO selectUser(int userId, String password) throws FindException {
+	public UserDTO selectUser(int userId) throws FindException {
 		PreparedStatement pstmt = null;
 		Connection conn = null;
 		ResultSet rs = null;
@@ -244,12 +242,11 @@ public class UserDAO {
 		} catch (Exception e) {
 			throw new FindException("DB 연결에 실패했습니다.");
 		}
-		String selectSQL = "SELECT u.ID, u.PASSWORD, u.USER_NAME, u.GENDER, r.ZIPCODE, r.CITY_NAME, r.SI_GUN_GU, r.DONG_EUP_MYEON FROM USERS u JOIN REGIONS r ON u.ZIPCODE = r.ZIPCODE WHERE U.id = ? AND u.PASSWORD = ? AND u.STATUS = 1";
+		String selectSQL = "SELECT u.ID, u.PASSWORD, u.USER_NAME, u.GENDER, r.ZIPCODE, r.CITY_NAME, r.SI_GUN_GU, r.DONG_EUP_MYEON FROM USERS u JOIN REGIONS r ON u.ZIPCODE = r.ZIPCODE WHERE U.id = ? AND u.STATUS = 1";
 
 		try {
 			pstmt = conn.prepareStatement(selectSQL);
 			pstmt.setInt(1, userId);
-			pstmt.setString(2, password);
 			rs = pstmt.executeQuery();
 
 			if (rs.next()) {
