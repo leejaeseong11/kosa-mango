@@ -8,18 +8,18 @@ import restaurant.dto.RestaurantDTO;
 
 @Data
 public class UserDTO {
-	private	String id;
-	private	int userId;
+	private	int id;
+	private	String userId;
 	private	String password;
 	private	String userName;
-	private	int gender;
-	private	int status;
+	private	int gender; //  1-남자, 2-여자
+	private	int status; // 1-활동 중, 2-탈퇴
 	private String zipcode;
 	private ArrayList<RestaurantDTO> restaurants;
 	private RegionDTO region;
 
 
-	public UserDTO(String id, String password, String userName, int gender, String zipcode) {
+	public UserDTO(int id, String password, String userName, int gender, String zipcode) {
 		super();
 		this.id = id;
 		this.password = password;
