@@ -6,14 +6,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import FavoriteDAO.FavoriteDAO;
+import exception.AddException;
+import exception.FindException;
+import exception.ModifyException;
+import exception.RemoveException;
 import jdbc.JDBC;
 import region.dto.RegionDTO;
 import user.dto.UserDTO;
 
 public class UserDAO {
 
-	public void join(UserDTO uDTO) {
-		// 4. SQL구문 송신
+	public void join(UserDTO uDTO) throws AddException{
 		PreparedStatement pstmt = null;
 		Connection conn = null;
 		try {
@@ -23,14 +26,14 @@ public class UserDAO {
 			e.printStackTrace();
 		}
 
-		// 아이디 검사
+		// ���대�� 寃���
 		if (!isIdValid(uDTO.getId())) {
 			
-			return;
+			throw new AddException("아이디가 중복되었습니다.");
 		}
 
 		if (!isPasswordValid(uDTO.getPassword())) {
-			return;
+			throw new AddException("비밀번호가 중복되었습니다."):
 		}
 
 		String insertSQL = "INSERT INTO users ( USER_ID, ID, PASSWORD, USER_NAME, GENDER,STATUS,ZIPCODE ) \r\n"
@@ -59,7 +62,7 @@ public class UserDAO {
 				}
 			}
 				if (rs != null) {
-				try {
+					try {
 					rs.close();
 				} catch (SQLException e) {
 				}
@@ -69,21 +72,21 @@ public class UserDAO {
 
 	}
 
-	private boolean isPasswordValid(String password) {
-		// 비밀번호는 최소 8자 이상, 대문자, 소문자, 숫자, 특수문자가 모두 포함되어야 함
+	private boolean isPasswordValid(String password){
+		// 鍮�諛�踰��몃�� 理��� 8�� �댁��, ��臾몄��, ��臾몄��, �レ��, �뱀��臾몄��媛� 紐⑤�� �ы�⑤���댁�� ��
 		String regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
 		return password.matches(regex);
 	}
 
-	// 아이디 중복검사
-	private boolean isIdValid(String id) {
+	// ���대�� 以�蹂듦���
+	private boolean isIdValid(String id) throws FindException{
 		PreparedStatement pstmt = null;
 		Connection conn = null;
 		try {
 			conn = JDBC.connect();
 			System.out.println("connect");
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new FindException("DB연결에 실패했습니다.");
 		}
 
 		String selectSQL = "SELECT COUNT(*) FROM users WHERE id = ? AND STATUS = 1";
@@ -92,7 +95,7 @@ public class UserDAO {
 			pstmt.setString(1, id);
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
-				// 존재하면 1이상 리턴
+				// 議댁�ы��硫� 1�댁�� 由ы��
 				if (rs.getInt(1) > 0) {
 					return false;
 				} else {
@@ -122,11 +125,11 @@ public class UserDAO {
 	}
 
 	public UserDTO login(UserDTO uDTO) {
-		// 4. SQL구문 송신
+		// 4. SQL援щЦ �≪��
 		PreparedStatement pstmt = null;
 		Connection conn = null;
 		ResultSet rs = null;
-		UserDTO user = null;	//로그인 실패시 null return
+		UserDTO user = null;	//濡�洹몄�� �ㅽ�⑥�� null return
 
 		try {
 			conn = JDBC.connect();
@@ -155,7 +158,7 @@ public class UserDAO {
 
 			}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			throw new FindException("로그인에 실패하셨습니다");
 		} finally {
 			if (pstmt != null) {
 				try {
@@ -176,7 +179,7 @@ public class UserDAO {
 	}
 
 	public void deleteUser(UserDTO uDTO) {
-		// 4. SQL구문 송신
+		// 4. SQL援щЦ �≪��
 		PreparedStatement pstmt = null;
 		Connection conn = null;
 		try {
@@ -185,15 +188,14 @@ public class UserDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		String deleteSQL = "UPDATE users" + " SET status=2" + " WHERE id=? and PASSWORD=? AND STATUS = 1";
-		"UPDATE users" + "SET "
+
 		try {
 			pstmt = conn.prepareStatement(deleteSQL);
 			pstmt.setString(1, uDTO.getId());
 			pstmt.setString(2, uDTO.getPassword());
 			int rowcnt = pstmt.executeUpdate();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			throw new RemoveException("회원탈퇴에 실패하셨습니다.") ;
 		} finally {
 			if (pstmt != null) {
 				try {
@@ -214,12 +216,13 @@ public class UserDAO {
 	public void updateUser(UserDTO uDTO) {
 		PreparedStatement pstmt = null;
 		Connection conn = null;
-
+		if(!isPasswordValid(uDTO.getpassword))
+			throw new ModifyException("패스워드가 유효하지않습니다.");
 		try {
 			conn = JDBC.connect();
 			System.out.println("connect");
 		} catch (Exception e) {
-			e.printStackTrace();
+		
 		}
 
 		String updateSQL = "UPDATE users SET password=? WHERE id=? AND STATUS = 1";
@@ -231,9 +234,7 @@ public class UserDAO {
 
 			int rowCnt = pstmt.executeUpdate();
 
-			if (rowCnt > 0) {
-			} else {
-			}
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -254,7 +255,7 @@ public class UserDAO {
 		}
 	}
 
-	//나의 찜한식당, 회원 상세정보 열람
+	//���� 李�������, ���� ���몄��蹂� �대��
 	public UserDTO selectUser(String id, String password) {
     PreparedStatement pstmt = null;
     Connection conn = null;
@@ -288,7 +289,7 @@ public class UserDAO {
             region.setDongEupMyeon(rs.getString("DONG_EUP_MYEON"));
             user.setRegion(region);
 
-            // 찜 목록 조회
+            // 李� 紐⑸� 議고��
             new FavoriteDAO().selectFavoritesByUserId(id);
         }
 
@@ -311,6 +312,6 @@ public class UserDAO {
         }
     }
 
-    return user; // 조회한 회원 정보를 반환
+    return user; // 議고���� ���� ��蹂대�� 諛���
 }
 }
