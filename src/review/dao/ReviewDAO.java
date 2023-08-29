@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import exception.AddException;
+import exception.FindException;
 import exception.ModifyException;
 import exception.RemoveException;
 import jdbc.JDBC;
@@ -31,29 +32,30 @@ public class ReviewDAO {
 			pstmt.setInt(4, reviewDTO.getUserId());
 			pstmt.executeUpdate();
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new AddException("DB 연결에 실패했습니다.");
 		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					throw new AddException("DB 종료에 실패했습니다.");
+				}
+			}
 			if (pstmt != null) {
 				try {
 					pstmt.close();
 				} catch (SQLException e) {
-					e.printStackTrace();
+					throw new AddException("DB 종료에 실패했습니다.");
 				}
 			}
 			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
-					e.printStackTrace();
+					throw new AddException("DB 종료에 실패했습니다.");
 				}
 			}
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+
 		}
 	}
 
@@ -68,27 +70,27 @@ public class ReviewDAO {
 			pstmt.setInt(1, reviewId);
 			pstmt.executeUpdate();
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new RemoveException("DB 연결에 실패했습니다.");
 		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					throw new RemoveException("DB 종료에 실패했습니다.");
+				}
+			}
 			if (pstmt != null) {
 				try {
 					pstmt.close();
 				} catch (SQLException e) {
-					e.printStackTrace();
+					throw new RemoveException("DB 종료에 실패했습니다.");
 				}
 			}
 			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (Exception e) {
-					e.printStackTrace();
+					throw new RemoveException("DB 종료에 실패했습니다.");
 				}
 			}
 		}
@@ -106,27 +108,27 @@ public class ReviewDAO {
 			pstmt.setInt(3, reviewId);
 			pstmt.executeUpdate();
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new ModifyException("DB 연결에 실패했습니다.");
 		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					throw new ModifyException("DB 종료에 실패했습니다.");
+				}
+			}
 			if (pstmt != null) {
 				try {
 					pstmt.close();
 				} catch (SQLException e) {
-					e.printStackTrace();
+					throw new ModifyException("DB 종료에 실패했습니다.");
 				}
 			}
 			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (Exception e) {
-					e.printStackTrace();
+					throw new ModifyException("DB 종료에 실패했습니다.");
 				}
 			}
 		}
@@ -136,7 +138,8 @@ public class ReviewDAO {
 	// @param restaurantId, rating
 	// @return 점수별로 review 출력
 	// pageSize는 목록의 번호, main class로부터 받아옴
-	public ArrayList<ReviewDTO> selectCategorizedRating(int pageSize, int rating, int restaurantId) {
+	public ArrayList<ReviewDTO> selectCategorizedRating(int pageSize, int rating, int restaurantId)
+			throws FindException {
 		String selectCategorizedSQL = "SELECT rating, review_content, write_time FROM reviews WHERE restaurant_id=? AND rating =?";
 		ArrayList<ReviewDTO> categorizedReviews = new ArrayList<>();
 		try {
@@ -159,27 +162,27 @@ public class ReviewDAO {
 				categorizedReviews.add(reviewDTO);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new FindException("DB  연결에 실패했습니다.");
 		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					throw new FindException("DB 종료에 실패했습니다.");
+				}
+			}
 			if (pstmt != null) {
 				try {
 					pstmt.close();
 				} catch (SQLException e) {
-					e.printStackTrace();
+					throw new FindException("DB 종료에 실패했습니다.");
 				}
 			}
 			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (Exception e) {
-					e.printStackTrace();
+					throw new FindException("DB 종료에 실패했습니다.");
 				}
 			}
 		}
@@ -190,7 +193,8 @@ public class ReviewDAO {
 	// @param restaurantId 식당 번호, index 목록번호
 	// @return restaurantReviews, 반환값 ArrayList<ReviewDTO>
 
-	public ArrayList<ReviewDTO> selectReviewByRestaurant(int pageSize, int restaurantId, int index) {
+	public ArrayList<ReviewDTO> selectReviewByRestaurant(int pageSize, int restaurantId, int index)
+			throws FindException {
 		String selectByRestaurantSQL = "SELECT *" + " FROM (SELECT ROWNUM rn, a.*" + " FROM ("
 				+ " SELECT user_id, review_content, rating, write_time" + " FROM reviews "
 				+ " WHERE restaurant_id = ?)  a" + ")" + " WHERE rn BETWEEN ? AND ?";
@@ -217,6 +221,13 @@ public class ReviewDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
 			if (pstmt != null) {
 				try {
 					pstmt.close();
@@ -231,13 +242,6 @@ public class ReviewDAO {
 					e.printStackTrace();
 				}
 			}
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
 		}
 		return restaurantReviews;
 	}
@@ -245,7 +249,7 @@ public class ReviewDAO {
 	// 사용자 화면에서 내가 쓴 리뷰들만 출력
 	// @param userId
 	// @return
-	public ArrayList<ReviewDTO> selectReviewByUser(int pageSize, int userId) {
+	public ArrayList<ReviewDTO> selectReviewByUser(int pageSize, int userId) throws FindException {
 		String selectByUserSQL = "SELECT *" + " FROM (SELECT ROWNUM rn, a.*" + " FROM ("
 				+ " SELECT user_id, review_content, rating, write_time" + " FROM reviews " + " WHERE user_id = ?)  a"
 				+ ")" + " WHERE rn BETWEEN ? AND ?";
@@ -267,28 +271,30 @@ public class ReviewDAO {
 				userReviews.add(reviewDTO);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new FindException("DB 연결에 실패했습니다.");
 		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					throw new FindException("DB 종료에 실패했습니다.");
+
+				}
+			}
 			if (pstmt != null) {
 				try {
 					pstmt.close();
 				} catch (SQLException e) {
-					e.printStackTrace();
+					throw new FindException("DB 종료에 실패했습니다.");
 				}
 			}
 			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
-					e.printStackTrace();
+					throw new FindException("DB 종료에 실패했습니다.");
 				}
 			}
-			if (rs != null)
-				try {
-					rs.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
 		}
 		return userReviews;
 	}
