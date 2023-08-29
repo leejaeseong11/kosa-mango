@@ -146,12 +146,15 @@ public class RestaurantDAO {
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         try {
-            String sql = "SELECT res.restaurant_id, res.restaurant_name, NVL(res.rating_score, -1), res.view_count, res.run_time, reg.city_name, reg.si_gun_gu, reg.dong_eup_myeon, res.detail_address, c.category_name, m.menu_id, m.menu_name, m.price" +
+            String sql = " SELECT *" +
+                    " FROM (SELECT *"+
+            		" FROM (SELECT res.restaurant_id, res.restaurant_name, NVL(res.rating_score, -1), res.view_count, res.run_time, res.zipcode, reg.city_name, reg.si_gun_gu, reg.dong_eup_myeon, res.detail_address, LISTAGG(c.category_name, ',')" +
                     " FROM restaurants res" +
                     " JOIN regions reg ON res.zipcode = reg.zipcode" +
                     " JOIN restaurants_categories rc ON res.restaurant_id = rc.restaurant_id" +
                     " JOIN categories c ON c.category_id = rc.category_id" +
                     " JOIN menu m ON m.restaurant_id = res.restaurant_id" +
+                    " GROUP BY res.restaurant_id, res.restaurant_name, res.view_count, res.run_time, res.detail_address, res.zipcode, reg.city_name, reg.si_gun_gu, reg .dong_eup_myeon, res.rating_score"+
                     " WHERE res.restaurant_id = ?";
 
             pstmt = conn.prepareStatement(sql);
