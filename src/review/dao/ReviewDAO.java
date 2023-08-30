@@ -317,7 +317,7 @@ public class ReviewDAO {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		String selectByUserSQL = "SELECT *" + " FROM (SELECT ROWNUM rn, a.*" + " FROM ("
-				+ " SELECT user_id, review_content, rating, write_time, restaurant_id" + " FROM reviews " + " WHERE user_id = ?)  a"
+				+ " SELECT user_id, review_content, rating, write_time, restaurant_id, review_id" + " FROM reviews " + " WHERE user_id = ?)  a"
 				+ ")" + " WHERE rn BETWEEN ? AND ?";
 		ArrayList<ReviewDTO> userReviews = new ArrayList<>();
 		int sizeA = 1 + pageSize * (index - 1);
@@ -336,6 +336,7 @@ public class ReviewDAO {
 				reviewDTO.setRating(rs.getInt("rating"));
 				reviewDTO.setWritingTime(rs.getDate("write_time"));
 				reviewDTO.setUserId(rs.getInt("user_id"));
+				reviewDTO.setId(rs.getInt("review_id"));
 				userReviews.add(reviewDTO);
 			}
 			selectByUserSQL = "SELECT COUNT(*) FROM reviews WHERE user_id = ?";

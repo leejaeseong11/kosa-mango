@@ -630,11 +630,11 @@ public class Main {
                             break;
                         } else if (userInputReviewOption > 0 && userInputReviewOption < Math.max(nextIndex, quitIndex)) {
                             printDivide(userInputReviewOption + "번 리뷰 수정");
-                            System.out.println("수정할 리뷰 내용을 입력하세요: ");
+                            System.out.print("수정할 리뷰 내용을 입력하세요: ");
                             String content = sc.nextLine();
-                            System.out.println("수정할 평점을 입력하세요: ");
+                            System.out.print("수정할 평점을 입력하세요: ");
                             int rating = Integer.parseInt(sc.nextLine());
-                            rDAO.updateReview(content, reviewList.get(userInputReviewOption).getId(), rating);
+                            rDAO.updateReview(content, rating, reviewList.get(userInputReviewOption - 1).getId());
                             printDivide(null);
                             break;
                         } else {
@@ -655,9 +655,10 @@ public class Main {
                         ArrayList<ReviewDTO> reviewList = rDAO.selectReviewByUser(PAGE_SIZE, userId, index);
                         for (int i = 0; i < reviewList.size(); i++) {
                             ReviewDTO reviewDTO = reviewList.get(i);
+                            System.out.println(i+1 + ".");
                             System.out.println(String.format("%s / %s", scoreMap.get(reviewDTO.getRating()), format.format(reviewDTO.getWritingTime())));
                             System.out.println(reviewDTO.getContent());
-                            printDivide(null);
+                            System.out.println("-".repeat(30));
                         }
 
                         System.out.println();
@@ -694,8 +695,10 @@ public class Main {
                             break;
                         } else if (userInputReviewOption > 0 && userInputReviewOption < Math.max(nextIndex, quitIndex)) {
                             printDivide(userInputReviewOption + "번 리뷰 삭제");
-                            rDAO.deleteReview(reviewList.get(userInputReviewOption).getId());
-                            printDivide("삭제 되었습니다.");
+                            rDAO.deleteReview(reviewList.get(userInputReviewOption - 1).getId());
+                            System.out.println(reviewList.get(userInputReviewOption - 1).getId());
+                            System.out.println("삭제 되었습니다.");
+                            printDivide(null);
                             break;
                         } else {
                             System.out.println("잘못된 입력입니다. 처음 검색 결과로 돌아갑니다.");
@@ -707,7 +710,11 @@ public class Main {
                     printDivide("4. 비밀번호 수정");
                     System.out.print("수정할 비밀번호를 입력하세요: ");
                     String password = sc.nextLine();
-                    uDAO.updateUser(userId, password);
+                    try {
+                        uDAO.updateUser(userId, password);
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage() + "다시 시도해주세요.");
+                    }
                     printDivide(null);
                     break;
                 case "5":
