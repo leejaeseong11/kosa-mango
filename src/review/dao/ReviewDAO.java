@@ -15,10 +15,6 @@ import jdbc.JDBC;
 import review.dto.ReviewDTO;
 
 public class ReviewDAO {
-	private Connection conn = null;
-	PreparedStatement pstmt = null;
-	ResultSet rs = null;
-	int pageSize = 10;
 	private int reviewCount;
 
 	public int getReviewCount() {
@@ -33,6 +29,9 @@ public class ReviewDAO {
 	 */
 	public void insertReview(ReviewDTO reviewDTO) throws AddException {
 		String insertSQL = "INSERT INTO reviews (review_id, review_content, rating, write_Time, restaurant_id, user_id) VALUES (reviews_seq.NEXTVAL,?, ?,sysdate,?,?)";
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try {
 			conn = JDBC.connect();
 			pstmt = conn.prepareStatement(insertSQL);
@@ -76,6 +75,9 @@ public class ReviewDAO {
 	 * @throws RemoveException
 	 */
 	public void deleteReview(int reviewId) throws RemoveException {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		String deleteSQL = "DELETE FROM reviews WHERE review_id=?";
 		try {
 			conn = JDBC.connect();
@@ -118,6 +120,9 @@ public class ReviewDAO {
 	 * @throws ModifyException
 	 */
 	public void updateReview(String content, int rating, int reviewId) throws ModifyException {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		String updateSQL = "UPDATE reviews SET review_content = ?, write_Time=sysdate, rating=? WHERE review_id=?";
 		try {
 			conn = JDBC.connect();
@@ -167,6 +172,9 @@ public class ReviewDAO {
 	 */
 	public ArrayList<ReviewDTO> selectCategorizedRating(int pageSize, int rating, int restaurantId, int index)
 			throws FindException {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		String selectCategorizedSQL = "SELECT rating, review_content, write_time FROM reviews WHERE restaurant_id=? AND rating =?";
 		ArrayList<ReviewDTO> categorizedReviews = new ArrayList<>();
 		try {
@@ -233,6 +241,9 @@ public class ReviewDAO {
 	 */
 	public ArrayList<ReviewDTO> selectReviewByRestaurant(int pageSize, int restaurantId, int index)
 			throws FindException {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		String selectByRestaurantSQL = "SELECT *" + " FROM (SELECT ROWNUM rn, a.*" + " FROM ("
 				+ " SELECT user_id, review_content, rating, write_time" + " FROM reviews "
 				+ " WHERE restaurant_id = ?)  a" + ")" + " WHERE rn BETWEEN ? AND ?";
@@ -246,7 +257,7 @@ public class ReviewDAO {
 			pstmt.setInt(1, restaurantId);
 			pstmt.setInt(2, sizeA);
 			pstmt.setInt(3, sizeB);
-			ResultSet rs = pstmt.executeQuery();
+			rs = pstmt.executeQuery();
 
 			while (rs.next()) {
 				ReviewDTO reviewDTO = new ReviewDTO();
@@ -302,6 +313,9 @@ public class ReviewDAO {
 	 * @throws FindException
 	 */
 	public ArrayList<ReviewDTO> selectReviewByUser(int pageSize, int userId, int index) throws FindException {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		String selectByUserSQL = "SELECT *" + " FROM (SELECT ROWNUM rn, a.*" + " FROM ("
 				+ " SELECT user_id, review_content, rating, write_time" + " FROM reviews " + " WHERE user_id = ?)  a"
 				+ ")" + " WHERE rn BETWEEN ? AND ?";
@@ -312,7 +326,7 @@ public class ReviewDAO {
 			conn = JDBC.connect();
 			pstmt = conn.prepareStatement(selectByUserSQL);
 			pstmt.setInt(1, userId);
-			ResultSet rs = pstmt.executeQuery();
+			rs = pstmt.executeQuery();
 			while (rs.next()) {
 				ReviewDTO reviewDTO = new ReviewDTO();
 				reviewDTO.setRestaurantId(rs.getInt("restaurant_id"));
