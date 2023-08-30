@@ -1,22 +1,46 @@
 package restaurant.service;
 
-import category.dto.CategoryDTO;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import exception.FindException;
 import menu.dto.MenuDTO;
 import region.dto.RegionDTO;
 import restaurant.dao.RestaurantDAO;
 import restaurant.dto.RestaurantDTO;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
 
 public class RestaurantService {
     private int pageSize;
     private int[] restaurantIdList;
     private int allRestaurantCount;
+
+    final static private HashMap<String, Integer> rankCategoryList = new HashMap<>();
+    final static private HashMap<String, String> rankRegionList = new HashMap<>();
+	
+
+    public RestaurantService() {
+        rankCategoryList.put("한식", 1);
+        rankCategoryList.put("일식", 2);
+        rankCategoryList.put("중식", 3);
+        rankCategoryList.put("양식", 4);
+        rankCategoryList.put("분식", 5);
+        rankCategoryList.put("술", 15);
+        
+        rankRegionList.put("서울시","영등포구");
+        rankRegionList.put("서울시","마포구");
+        rankRegionList.put("서울시","송파구");
+    }
+  
+    public HashMap<String, Integer> getRankCategoryList() {
+        return rankCategoryList;
+    }
+    public HashMap<String, String> getRankRegionList(){
+    	return rankRegionList;
+    }
     public RestaurantService(int pageSize) {
         this.pageSize = pageSize;
         restaurantIdList = new int[pageSize];
@@ -41,12 +65,22 @@ public class RestaurantService {
         ArrayList<RestaurantDTO> rDtoList = null;
             try {
                 if (searchType.equals("GENERAL_SEARCH")) {
-                    rDtoList = rDao.searchRestaurants(searchWord, this.pageSize, index);
-                    allRestaurantCount = rDao.getRestaurantCount();
+                   rDtoList = rDao.searchRestaurants(searchWord, this.pageSize, index);
+                   allRestaurantCount = rDao.getRestaurantCount();
                 } else if (searchType.equals("RANK_CATEGORY")) {
-
+                    rDtoList = rDao.rankRestaurantsByCategory(rankCategoryList.get(searchWord), this.pageSize, index);
+                    allRestaurantCount = rDao.getRestaurantCount();
                 } else if (searchType.equals("RANK_REGION")) {
-
+                	String[] searchWordsArray = searchWord.split("\\s+");
+                    List<String> searchWordsList = Arrays.asList(searchWordsArray);
+                    
+                   
+                    String searchWord1 = searchWordsList.get(0);
+                    String searchWord2 = searchWordsList.get(1);
+                        
+                    rDtoList = rDao.rankRestaurantsByRegion(rankRegionList.get(searchWord1), rankRegionList.get(searchWord2), this.pageSize, index);
+                    allRestaurantCount = rDao.getRestaurantCount();
+                   
                 }
             } catch (FindException e) {
                 e.printStackTrace();
@@ -82,7 +116,7 @@ public class RestaurantService {
         RestaurantDTO rDto = null;
 
         if (viewType.equals("VIEW_DETAIL")) {
-
+            rDto = rDao.selectDetailRestaurantInfo(restaurantIdList[orderIndex-1]);
         } else if(viewType.equals("VIEW_RANDOM")) {
             rDto = rDao.randomRestaurantNearMyHouse(restaurantIdList[orderIndex-1]);
         }
