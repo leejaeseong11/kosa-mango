@@ -478,9 +478,17 @@ public class Main {
                     break;
                 case "3":
                     printDivide("3. 오늘 뭐먹지? (내 집 주변 랜덤 식당)");
-                    index = 1;
-                    rService.printDetailRestaurant("VIEW_RANDOM", userId);
-                    printDivide(null);
+                    if (userId != Integer.MIN_VALUE) {
+                        index = 1;
+                        try {
+                            rService.printDetailRestaurant("VIEW_RANDOM", userId);
+                        } catch (Exception e) {
+                            System.out.println("올바른 주소가 아닙니다.");
+                        }
+                        printDivide(null);
+                    } else {
+                        System.out.println("로그인 후 이용해주세요.");
+                    }
                     break;
                 case "4":
                     break;
