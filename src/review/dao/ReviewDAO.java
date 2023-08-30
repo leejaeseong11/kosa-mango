@@ -21,7 +21,7 @@ public class ReviewDAO {
 	int pageSize = 10;
 	private int reviewCount;
 
-	public int getReviewCount() throws FindException {
+	public int getReviewCount() {
 		return reviewCount;
 	}
 
@@ -192,7 +192,7 @@ public class ReviewDAO {
 			pstmt.setInt(2, rating);
 			rs = pstmt.executeQuery();
 			if (rs.next()) {
-				this.reviewCount = rs.getInt("restaurant_id");
+				this.reviewCount = rs.getInt("COUNT(*)");
 			}
 		} catch (Exception e) {
 			throw new FindException("DB  연결에 실패했습니다.");
@@ -262,7 +262,7 @@ public class ReviewDAO {
 			pstmt.setInt(1, restaurantId);
 			rs = pstmt.executeQuery();
 			if (rs.next()) {
-				this.reviewCount = rs.getInt("restaurant_id");
+				this.reviewCount = rs.getInt("COUNT(*)");
 			}
 		} catch (Exception e) {
 			throw new FindException("DB 연결에 실패했습니다.");
@@ -328,7 +328,7 @@ public class ReviewDAO {
 			pstmt.setInt(1, userId);
 			rs = pstmt.executeQuery();
 			if (rs.next()) {
-				this.reviewCount = rs.getInt("user_id");
+				this.reviewCount = rs.getInt("COUNT(*)");
 			}
 		} catch (Exception e) {
 			throw new FindException("DB 연결에 실패했습니다.");

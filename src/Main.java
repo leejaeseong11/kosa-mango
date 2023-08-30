@@ -10,7 +10,7 @@ import java.util.Scanner;
 
 public class Main {
     final static private int PAGE_SIZE = 5;
-    static private int userId = Integer.MIN_VALUE;
+    static private int userId = 1;
     public static void main(String[] args) throws FindException, AddException {
         initService();
     }
@@ -223,7 +223,7 @@ public class Main {
                             System.out.println("0. 이전으로\n");
                             beforeIndex = 0;
                         }
-//                        reviewDAO.selectReviewByRestaurant(PAGE_SIZE, rDTO.getId(), index);
+                        reviewDAO.selectReviewByRestaurant(PAGE_SIZE, rDTO.getId(), index);
                         System.out.println();
                         if (reviewDAO.getReviewCount() == 0) {
                             System.out.println("검색 결과가 없습니다.");
