@@ -95,31 +95,31 @@ public class RestaurantDAO {
             rs = pstmt.executeQuery();
 
             while (rs.next()) {
-                    RestaurantDTO returnedRestaurant = new RestaurantDTO();
-                    RegionDTO r = new RegionDTO();
-                    returnedRestaurant.setId(rs.getInt(3));
-                    returnedRestaurant.setName(rs.getString(4));
-                    double ratingScore = rs.getDouble(5);
-                    returnedRestaurant.setRatingScore(Math.round(ratingScore*100)/100.0);
-                    r.setCityName(rs.getString(6));
-                    r.setSiGunGu(rs.getString(7));
-                    returnedRestaurant.setRegion(r);
+                RestaurantDTO returnedRestaurant = new RestaurantDTO();
+                RegionDTO r = new RegionDTO();
+                returnedRestaurant.setId(rs.getInt(3));
+                returnedRestaurant.setName(rs.getString(4));
+                double ratingScore = rs.getDouble(5);
+                returnedRestaurant.setRatingScore(Math.round(ratingScore*100)/100.0);
+                r.setCityName(rs.getString(6));
+                r.setSiGunGu(rs.getString(7));
+                returnedRestaurant.setRegion(r);
 
-                    ArrayList<CategoryDTO> categoriesList = new ArrayList<>();
-                    String[] categoryNames = rs.getString(8).split(",");
-                    HashSet<String> categoryNamesSet = new HashSet<>();
+                ArrayList<CategoryDTO> categoriesList = new ArrayList<>();
+                String[] categoryNames = rs.getString(8).split(",");
+                HashSet<String> categoryNamesSet = new HashSet<>();
 
-                    for(int i = 0; i < categoryNames.length; i++) {
-                        categoryNamesSet.add(categoryNames[i]);
-                    }
+                for(int i = 0; i < categoryNames.length; i++) {
+                    categoryNamesSet.add(categoryNames[i]);
+                }
 
-                    for(int i = 0; i < categoryNamesSet.size(); i++) {
-                        CategoryDTO c = new CategoryDTO();
-                        c.setName(categoryNames[i]);
-                        categoriesList.add(c);
-                    }
-                    returnedRestaurant.setCategories(categoriesList);
-                    returnedRestaurants.add(returnedRestaurant);
+                for(int i = 0; i < categoryNamesSet.size(); i++) {
+                    CategoryDTO c = new CategoryDTO();
+                    c.setName(categoryNames[i]);
+                    categoriesList.add(c);
+                }
+                returnedRestaurant.setCategories(categoriesList);
+                returnedRestaurants.add(returnedRestaurant);
             }
 
         } catch (SQLException e) {
@@ -172,22 +172,22 @@ public class RestaurantDAO {
 
         try {
             String sql = " SELECT *" +
-                         " FROM (SELECT *"+
-                         " FROM (SELECT res.restaurant_id, res.restaurant_name, res.view_count, res.run_time, res.detail_address, res.zipcode, reg.city_name, reg.si_gun_gu, reg .dong_eup_myeon, LISTAGG(c.category_name, ','), NVL(res.rating_score, -1)"+
-                         " FROM restaurants res"+
-                         " JOIN regions reg ON res.zipcode = reg.zipcode"+
-                         " JOIN restaurants_categories rc ON res.restaurant_id = rc.restaurant_id"+
-                         " JOIN categories c ON c.category_id = rc.category_id"+
-                         " AND EXISTS (SELECT 1"+
-                         " FROM users u"+
-                         " JOIN regions user_reg ON u.zipcode = user_reg.zipcode"+
-                         " WHERE user_reg.city_name = reg.city_name"+
-                         " AND u.user_id = ?"+
-                         " AND user_reg.si_gun_gu = reg.si_gun_gu)"+
-                         " GROUP BY res.restaurant_id, res.restaurant_name, res.view_count, res.run_time, res.detail_address, res.zipcode, reg.city_name, reg.si_gun_gu, reg .dong_eup_myeon, res.rating_score"+
-                         " ORDER BY DBMS_RANDOM.RANDOM)"+
-                         " WHERE ROWNUM = 1) ran"+
-                         " JOIN menu m ON ran.restaurant_id = m.restaurant_id";
+                    " FROM (SELECT *"+
+                    " FROM (SELECT res.restaurant_id, res.restaurant_name, res.view_count, res.run_time, res.detail_address, res.zipcode, reg.city_name, reg.si_gun_gu, reg .dong_eup_myeon, LISTAGG(c.category_name, ','), NVL(res.rating_score, -1)"+
+                    " FROM restaurants res"+
+                    " JOIN regions reg ON res.zipcode = reg.zipcode"+
+                    " JOIN restaurants_categories rc ON res.restaurant_id = rc.restaurant_id"+
+                    " JOIN categories c ON c.category_id = rc.category_id"+
+                    " AND EXISTS (SELECT 1"+
+                    " FROM users u"+
+                    " JOIN regions user_reg ON u.zipcode = user_reg.zipcode"+
+                    " WHERE user_reg.city_name = reg.city_name"+
+                    " AND u.user_id = ?"+
+                    " AND user_reg.si_gun_gu = reg.si_gun_gu)"+
+                    " GROUP BY res.restaurant_id, res.restaurant_name, res.view_count, res.run_time, res.detail_address, res.zipcode, reg.city_name, reg.si_gun_gu, reg .dong_eup_myeon, res.rating_score"+
+                    " ORDER BY DBMS_RANDOM.RANDOM)"+
+                    " WHERE ROWNUM = 1) ran"+
+                    " JOIN menu m ON ran.restaurant_id = m.restaurant_id";
 
             pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, userId);
@@ -262,7 +262,7 @@ public class RestaurantDAO {
         }
         return returnedRestaurant;
     }
-  
+
     public RestaurantDTO selectDetailRestaurantInfo(int restaurantId) throws FindException {
         RestaurantDTO restaurantDetail = null;
 
@@ -299,12 +299,12 @@ public class RestaurantDAO {
                 restaurantDetail.setViewCount(rs.getInt("view_count"));
                 restaurantDetail.setRunTime(rs.getString("run_time"));
                 restaurantDetail.setDetailAddress(rs.getString("detail_address"));
-                
+
                 r.setCityName(rs.getString("city_name"));
                 r.setSiGunGu(rs.getString("si_gun_gu"));
                 r.setDongEupMyeon(rs.getString("dong_eup_myeon"));
                 restaurantDetail.setRegion(r);
-                
+
                 ArrayList<CategoryDTO> categoriesList = new ArrayList<>();
                 String[] categoryNames = rs.getString("c_name").split(",");
 
@@ -323,9 +323,9 @@ public class RestaurantDAO {
                 restaurantDetail.setRatingScore(rs.getDouble("rating_score"));
 
                 sql = " SELECT m.*"+
-                      " FROM menu m"+
-                      " JOIN restaurants res ON res.restaurant_id = m.restaurant_id" +
-                      " WHERE res.restaurant_id = ?";
+                        " FROM menu m"+
+                        " JOIN restaurants res ON res.restaurant_id = m.restaurant_id" +
+                        " WHERE res.restaurant_id = ?";
                 pstmt = conn.prepareStatement(sql);
                 pstmt.setInt(1, restaurantDetail.getId());
                 rs = pstmt.executeQuery();
@@ -370,7 +370,7 @@ public class RestaurantDAO {
 
         return restaurantDetail;
     }
-    
+
     public ArrayList<RestaurantDTO> rankRestaurantsByCategory(int categoryId, int pageSize, int index) throws FindException {
         ArrayList<RestaurantDTO> restaurantList = new ArrayList<>();
 
@@ -395,7 +395,7 @@ public class RestaurantDAO {
             pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, categoryId);
             rs = pstmt.executeQuery();
-            
+
             if (rs.next()) {
                 this.restaurantCount = rs.getInt(1);
             }
@@ -419,7 +419,7 @@ public class RestaurantDAO {
             pstmt.setInt(2, pageSize * (index - 1) + 1);
             pstmt.setInt(3, pageSize * index);
             rs = pstmt.executeQuery();
-            
+
             while (rs.next()) {
                 RestaurantDTO restaurantDTO = new RestaurantDTO();
                 RegionDTO r = new RegionDTO();
@@ -482,7 +482,7 @@ public class RestaurantDAO {
 
         return restaurantList;
     }
-    
+
     public ArrayList<RestaurantDTO> rankRestaurantsByRegion(String city_name, String si_gun_gu, int pageSize, int index) throws FindException {
         ArrayList<RestaurantDTO> restaurantList = new ArrayList<>();
 
@@ -595,3 +595,4 @@ public class RestaurantDAO {
         return restaurantList;
     }
 }
+
