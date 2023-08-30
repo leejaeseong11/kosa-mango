@@ -12,10 +12,7 @@ import user.dao.UserDAO;
 import user.dto.UserDTO;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 
 public class Main {
     final static private int PAGE_SIZE = 5;
@@ -209,10 +206,10 @@ public class Main {
                     FavoriteDAO fDAO = new FavoriteDAO();
                     try {
                         fDAO.insertFavorites(userId, rDTO.getId());
+                        System.out.println(String.format("찜 목록에 \"%s\"가 추가되었습니다.", rDTO.getName()));
                     } catch (Exception e) {
                         System.out.println(e.getMessage() + " 이미 찜 목록에 존재하는 식당입니다.");
                     }
-                    System.out.println(String.format("찜 목록에 \"%s\"가 추가되었습니다.", rDTO.getName()));
                     break;
                 } else if (userInput == 2) {
                     printDivide("2. 리뷰 쓰기 - " + rDTO.getName());
@@ -261,7 +258,6 @@ public class Main {
                             System.out.println(String.format("%s / %s", scoreMap.get(reviewDTO.getRating()), format.format(reviewDTO.getWritingTime())));
                             System.out.println(reviewDTO.getContent());
                             System.out.println("-".repeat(30));
-                            printDivide(null);
                         }
 
                         System.out.println();
@@ -418,11 +414,16 @@ public class Main {
                     break;
                 case "2":
                     printDivide("2. 지역별 인기 맛집");
+                    HashSet<String> regionSet = new HashSet<>();
                     ArrayList<String> regionList = rService.getRankRegionList();
                     int regionListIndex = 0;
                     for(String region : regionList) {
-                        System.out.println(String.format("%d. %s", regionListIndex + 1, region));
-                        regionListIndex++;
+                        if (!regionSet.contains(region)) {
+                            System.out.println(String.format("%d. %s", regionListIndex + 1, region));
+                            regionListIndex++;
+                            regionSet.add(region);
+                        }
+
                     }
                     printDivide("확인할 지역 번호를 입력해주세요: ");
                     String choiceRegion = regionList.get(Integer.parseInt(sc.nextLine()) - 1);
@@ -541,7 +542,6 @@ public class Main {
                 System.out.println("잘못된 성별입니다. 다시 입력하세요.");
             }
         }
-        sc.nextLine();
 
         RegionDTO inputRegion = new RegionDTO();
         System.out.print("주소(시/도 시/군/구 동/읍/면)를 입력해주세요 (ex. 서울시 송파구 가락동 ): ");
@@ -767,8 +767,9 @@ public class Main {
             int inputIndex = Integer.parseInt(sc.nextLine());
             if (inputIndex == 0) {
                 break;
-            } else if (inputIndex < restaurantList.size()) {
-                fDAO.deleteFavorites(userId, restaurantList.get(inputIndex).getId());
+            } else if (inputIndex <= restaurantList.size()) {
+                fDAO.deleteFavorites(userId, restaurantList.get(inputIndex-1).getId());
+                break;
             } else {
                 System.out.println("잘못된 입력입니다. 다시 입력해주세요.");
             }
