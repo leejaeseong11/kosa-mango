@@ -207,7 +207,11 @@ public class Main {
                 if (userInput == 1) {
                     printDivide("1. 찜 하기");
                     FavoriteDAO fDAO = new FavoriteDAO();
-                    fDAO.insertFavorites(userId, rDTO.getId());
+                    try {
+                        fDAO.insertFavorites(userId, rDTO.getId());
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage() + " 이미 찜 목록에 존재하는 식당입니다.");
+                    }
                     System.out.println(String.format("찜 목록에 \"%s\"가 추가되었습니다.", rDTO.getName()));
                     break;
                 } else if (userInput == 2) {
