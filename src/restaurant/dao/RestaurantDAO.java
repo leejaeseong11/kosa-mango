@@ -193,19 +193,18 @@ public class RestaurantDAO {
             pstmt.setInt(1, userId);
 
             rs = pstmt.executeQuery();
-            RestaurantDTO rDTO = new RestaurantDTO();
             if (rs.next()) {
-                rDTO.setId(rs.getInt(1));
-                rDTO.setName(rs.getString(2));
-                rDTO.setViewCount(rs.getInt(3));
-                rDTO.setDetailAddress(rs.getString(5));
-                rDTO.setRunTime(rs.getString(4));
+                returnedRestaurant.setId(rs.getInt(1));
+                returnedRestaurant.setName(rs.getString(2));
+                returnedRestaurant.setViewCount(rs.getInt(3));
+                returnedRestaurant.setDetailAddress(rs.getString(5));
+                returnedRestaurant.setRunTime(rs.getString(4));
                 RegionDTO regDTO = new RegionDTO();
                 regDTO.setZipcode(rs.getString(6));
                 regDTO.setCityName(rs.getString(7));
                 regDTO.setSiGunGu(rs.getString(8));
                 regDTO.setDongEupMyeon(rs.getString(9));
-                rDTO.setRegion(regDTO);
+                returnedRestaurant.setRegion(regDTO);
 
                 ArrayList<CategoryDTO> categoriesList = new ArrayList<>();
                 String[] categoryNames = rs.getString(10).split(",");
@@ -222,15 +221,8 @@ public class RestaurantDAO {
                     categoriesList.add(c);
                 }
                 returnedRestaurant.setCategories(categoriesList);
-                rDTO.setRatingScore(rs.getDouble(11));
+                returnedRestaurant.setRatingScore(rs.getDouble(11));
 
-                sql = " SELECT m.*"+
-                      " FROM menu m"+
-                      " JOIN restaurants res ON res.restaurant_id = m.restaurant_id" +
-                      " WHERE res.restaurant_id = ?";
-                pstmt = conn.prepareStatement(sql);
-                pstmt.setInt(1, rDTO.getId());
-                rs = pstmt.executeQuery();
                 ArrayList<MenuDTO> menuList = new ArrayList<>();
                 do {
                     MenuDTO mDTO = new MenuDTO();
@@ -240,7 +232,7 @@ public class RestaurantDAO {
                     mDTO.setRestaurantId(rs.getInt(15));
                     menuList.add(mDTO);
                 } while (rs.next());
-                rDTO.setMenu(menuList);
+                returnedRestaurant.setMenu(menuList);
             }
         } catch (SQLException e) {
             e.printStackTrace();
