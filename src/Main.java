@@ -19,7 +19,7 @@ import java.util.Set;
 
 public class Main {
     final static private int PAGE_SIZE = 5;
-    static private int userId = 1;
+    static private int userId = Integer.MIN_VALUE;
     public static void main(String[] args) throws FindException, AddException, ModifyException, RemoveException {
         while(initService());
     }
@@ -585,9 +585,10 @@ public class Main {
                         ArrayList<ReviewDTO> reviewList = rDAO.selectReviewByUser(PAGE_SIZE, userId, index);
                         for (int i = 0; i < reviewList.size(); i++) {
                             ReviewDTO reviewDTO = reviewList.get(i);
+                            System.out.println(i+1 + ".");
                             System.out.println(String.format("%s / %s", scoreMap.get(reviewDTO.getRating()), format.format(reviewDTO.getWritingTime())));
                             System.out.println(reviewDTO.getContent());
-                            printDivide(null);
+                            System.out.println("-".repeat(30));
                         }
 
                         System.out.println();

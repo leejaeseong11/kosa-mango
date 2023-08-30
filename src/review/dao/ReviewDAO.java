@@ -316,7 +316,7 @@ public class ReviewDAO {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		String selectByUserSQL = "SELECT *" + " FROM (SELECT ROWNUM rn, a.*" + " FROM ("
-				+ " SELECT user_id, review_content, rating, write_time" + " FROM reviews " + " WHERE user_id = ?)  a"
+				+ " SELECT user_id, review_content, rating, write_time, restaurant_id" + " FROM reviews " + " WHERE user_id = ?)  a"
 				+ ")" + " WHERE rn BETWEEN ? AND ?";
 		ArrayList<ReviewDTO> userReviews = new ArrayList<>();
 		int sizeA = 1 + pageSize * (index - 1);
@@ -325,6 +325,8 @@ public class ReviewDAO {
 			conn = JDBC.connect();
 			pstmt = conn.prepareStatement(selectByUserSQL);
 			pstmt.setInt(1, userId);
+			pstmt.setInt(2, sizeA);
+			pstmt.setInt(3, sizeB);
 			rs = pstmt.executeQuery();
 			while (rs.next()) {
 				ReviewDTO reviewDTO = new ReviewDTO();
@@ -343,6 +345,7 @@ public class ReviewDAO {
 				this.reviewCount = rs.getInt("COUNT(*)");
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new FindException("DB 연결에 실패했습니다.");
 		} finally {
 			if (rs != null) {
