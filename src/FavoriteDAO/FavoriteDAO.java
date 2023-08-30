@@ -75,7 +75,6 @@ public class FavoriteDAO {
 		Connection conn = null;
 		try {
 			conn = JDBC.connect();
-			System.out.println("connect");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -113,7 +112,6 @@ public class FavoriteDAO {
 		Connection conn = null;
 		try {
 			conn = JDBC.connect();
-			System.out.println("connect");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
