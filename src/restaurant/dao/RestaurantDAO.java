@@ -599,7 +599,6 @@ public class RestaurantDAO {
                 }
             }
         }
-
         return restaurantList;
     }
 }
