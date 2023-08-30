@@ -165,7 +165,7 @@ public class ReviewDAO {
 	 * @return 점수별로 review 출력
 	 * @throws FindException
 	 */
-	public ArrayList<ReviewDTO> selectCategorizedRating(int pageSize, int rating, int restaurantId, int index)
+	public ArrayList<ReviewDTO> selectCategorizedRating(int rating, int restaurantId)
 			throws FindException {
 		String selectCategorizedSQL = "SELECT rating, review_content, write_time FROM reviews WHERE restaurant_id=? AND rating =?";
 		ArrayList<ReviewDTO> categorizedReviews = new ArrayList<>();

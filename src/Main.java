@@ -197,7 +197,7 @@ public class Main {
         int userInput;
         if (userId != Integer.MIN_VALUE) {
             do {
-                printMenu("찜 하기", "리뷰 쓰기", "리뷰 보기", "이전으로");
+                printMenu("찜 하기", "리뷰 쓰기", "전체 리뷰 보기", "별점 별 리뷰 보기", "이전으로");
                 System.out.print("번호를 입력해주세요: ");
                 userInput = Integer.parseInt(sc.nextLine());
                 if (userInput == 1) {
@@ -230,7 +230,7 @@ public class Main {
                     reviewDAO.insertReview(reviewDTO);
                     break;
                 } else if (userInput == 3) {
-                    printDivide("3. 리뷰 보기 - " + rDTO.getName());
+                    printDivide("3. 전체 리뷰 보기 - " + rDTO.getName());
                     ReviewDAO reviewDAO = new ReviewDAO();
                     int index = 1;
                     int userInputReviewOption;
@@ -247,7 +247,7 @@ public class Main {
                             beforeIndex = 0;
                         }
                         ArrayList<ReviewDTO> reviewList = reviewDAO.selectReviewByRestaurant(PAGE_SIZE, rDTO.getId(), index);
-                        for (int i = 0; i <reviewList.size(); i++) {
+                        for (int i = 0; i < reviewList.size(); i++) {
                             ReviewDTO reviewDTO = reviewList.get(i);
                             System.out.println(String.format("%s / %s", scoreMap.get(reviewDTO.getRating()), format.format(reviewDTO.getWritingTime())));
                             System.out.println(reviewDTO.getContent());
@@ -292,11 +292,39 @@ public class Main {
                         }
                     } while (true);
                     break;
-                } else {
+                } else if (userInput == 4) {
+                    printDivide("4. 별점 별 리뷰 보기 - " + rDTO.getName());
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+                    System.out.println("확인할 별점을 입력하세요. (1. 맛있어요 / 2. 그냥 그래요 / 3. 별로에요): ");
+                    String ratingInput = sc.nextLine();
+                    int searchRating = -1;
+                    if (ratingInput.equals(("1"))) {
+                        searchRating = 5;
+                    } else if (ratingInput.equals(("2"))) {
+                        searchRating = 3;
+                    } else if (ratingInput.equals(("3"))) {
+                        searchRating = 1;
+                    }
+
+                    ReviewDAO reviewDAO = new ReviewDAO();
+                    ArrayList<ReviewDTO> reviewListForRating = reviewDAO.selectCategorizedRating(searchRating, rDTO.getId());
+                    if (reviewListForRating.size() == 0) {
+                        System.out.println("해당 별점의 리뷰가 없습니다.");
+                        break;
+                    }
+                    for (int i = 0; i < reviewListForRating.size(); i++) {
+                        System.out.println(String.format("%s / %s", reviewListForRating.get(i).getContent(), format.format(reviewListForRating.get(i).getWritingTime())));
+                    }
+                    printDivide("검색된 리뷰 개수: " + reviewDAO.getReviewCount());
+                    break;
+
+                }
+                else {
                     System.out.println("잘못된 입력입니다. 다시 입력해주세요.");
                     printDivide(null);
                 }
-            } while (userInput != 4);
+            } while (userInput != 5);
             printDivide(null);
 
         }
