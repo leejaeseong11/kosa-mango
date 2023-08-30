@@ -207,11 +207,12 @@ public class UserDAO {
 		try {
 			String updateSQL = "UPDATE users SET password=? WHERE user_id=? AND STATUS = 1";
 			pstmt = conn.prepareStatement(updateSQL);
-			pstmt.setInt(1, userId);
-			pstmt.setString(2, password);
+			pstmt.setInt(2, userId);
+			pstmt.setString(1, password);
 			pstmt.executeUpdate();
 
 		} catch (SQLException e) {
+			e.printStackTrace();
 			throw new ModifyException("비밀번호 수정에 실패했습니다.");
 		} finally {
 			if (pstmt != null) {

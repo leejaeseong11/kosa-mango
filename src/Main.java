@@ -92,7 +92,7 @@ public class Main {
                 }
             }
         } else {
-            while(!userChoice.equals("4")) {
+            while(!userChoice.equals("5")) {
                 printMenu("식당 검색하기", "식당 추천", "내 정보 보기", "로그아웃", "종료하기");
 
                 System.out.print("번호를 입력해주세요: ");
@@ -705,7 +705,7 @@ public class Main {
                     break;
                 case "4":
                     printDivide("4. 비밀번호 수정");
-                    System.out.println("수정할 비밀번호를 입력하세요: ");
+                    System.out.print("수정할 비밀번호를 입력하세요: ");
                     String password = sc.nextLine();
                     uDAO.updateUser(userId, password);
                     printDivide(null);
