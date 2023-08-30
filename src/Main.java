@@ -253,8 +253,10 @@ public class Main {
                         ArrayList<ReviewDTO> reviewList = reviewDAO.selectReviewByRestaurant(PAGE_SIZE, rDTO.getId(), index);
                         for (int i = 0; i < reviewList.size(); i++) {
                             ReviewDTO reviewDTO = reviewList.get(i);
+                            System.out.println(i+1 + ".");
                             System.out.println(String.format("%s / %s", scoreMap.get(reviewDTO.getRating()), format.format(reviewDTO.getWritingTime())));
                             System.out.println(reviewDTO.getContent());
+                            System.out.println("-".repeat(30));
                             printDivide(null);
                         }
 
