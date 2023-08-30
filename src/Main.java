@@ -558,7 +558,7 @@ public class Main {
         ReviewDAO rDAO = new ReviewDAO();
         int index = 1;
 
-        while(!userChoice.equals("5")) {
+        while(!userChoice.equals("6")) {
             printMenu("내 찜 목록 조회 및 삭제", "내가 쓴 리뷰 수정", "내가 쓴 리뷰 삭제", "비밀번호 수정", "회원 탈퇴", "이전으로");
 
             System.out.print("번호를 입력해주세요: ");
@@ -713,6 +713,7 @@ public class Main {
                     printDivide(null);
                     break;
                 case "6":
+                    printDivide(null);
                     break;
                 default:
                     System.out.println("잘못된 입력입니다. 다시 입력해주세요.");
