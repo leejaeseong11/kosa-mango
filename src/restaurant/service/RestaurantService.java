@@ -35,9 +35,9 @@ public class RestaurantService {
         rankCategoryList.put("분식", 5);
         rankCategoryList.put("술", 15);
 
-        rankRegionList.put("서울시","영등포구");
-        rankRegionList.put("서울시","마포구");
-        rankRegionList.put("서울시","송파구");
+        rankRegionList.put("서울시", "영등포구");
+        rankRegionList.put("서울시", "마포구");
+        rankRegionList.put("서울시", "송파구");
 
         this.pageSize = pageSize;
         restaurantIdList = new int[pageSize];
