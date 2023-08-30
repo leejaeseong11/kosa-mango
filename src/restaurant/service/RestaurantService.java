@@ -19,12 +19,12 @@ public class RestaurantService {
     private int allRestaurantCount;
 
     final static private HashMap<String, Integer> rankCategoryList = new HashMap<>();
-    final static private HashMap<String, String> rankRegionList = new HashMap<>();
+    final static private ArrayList<String> rankRegionList = new ArrayList<>();
 	
     public HashMap<String, Integer> getRankCategoryList() {
         return rankCategoryList;
     }
-    public HashMap<String, String> getRankRegionList(){
+    public ArrayList<String> getRankRegionList(){
     	return rankRegionList;
     }
     public RestaurantService(int pageSize) {
@@ -35,9 +35,9 @@ public class RestaurantService {
         rankCategoryList.put("분식", 5);
         rankCategoryList.put("술", 15);
 
-        rankRegionList.put("서울시", "영등포구");
-        rankRegionList.put("서울시", "마포구");
-        rankRegionList.put("서울시", "송파구");
+        rankRegionList.add("서울시 영등포구");
+        rankRegionList.add("서울시 마포구");
+        rankRegionList.add("서울시 송파구");
 
         this.pageSize = pageSize;
         restaurantIdList = new int[pageSize];
@@ -68,13 +68,9 @@ public class RestaurantService {
                     rDtoList = rDao.rankRestaurantsByCategory(rankCategoryList.get(searchWord), this.pageSize, index);
                     allRestaurantCount = rDao.getRestaurantCount();
                 } else if (searchType.equals("RANK_REGION")) {
-                	String[] searchWordsArray = searchWord.split("\\s+");
-                    List<String> searchWordsList = Arrays.asList(searchWordsArray);
-                   
-                    String searchWord1 = searchWordsList.get(0);
-                    String searchWord2 = searchWordsList.get(1);
+                	String[] searchWordsArray = searchWord.split(" ");
                         
-                    rDtoList = rDao.rankRestaurantsByRegion(rankRegionList.get(searchWord1), rankRegionList.get(searchWord2), this.pageSize, index);
+                    rDtoList = rDao.rankRestaurantsByRegion(searchWordsArray[0], searchWordsArray[1], this.pageSize, index);
                     allRestaurantCount = rDao.getRestaurantCount();
                    
                 }

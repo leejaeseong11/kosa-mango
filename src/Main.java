@@ -319,13 +319,13 @@ public class Main {
                     printDivide("검색된 리뷰 개수: " + reviewDAO.getReviewCount());
                     break;
 
-                }
-                else {
+                } else if(userInput == 5) {
+                    break;
+                } else {
                     System.out.println("잘못된 입력입니다. 다시 입력해주세요.");
                     printDivide(null);
                 }
             } while (userInput != 5);
-            printDivide(null);
 
         }
     }
@@ -408,16 +408,14 @@ public class Main {
                     break;
                 case "2":
                     printDivide("2. 지역별 인기 맛집");
-                    Set<String> regionSet = rService.getRankRegionList().keySet();
-                    String[] regionLArray = new String[regionSet.size()];
+                    ArrayList<String> regionList = rService.getRankRegionList();
                     int regionListIndex = 0;
-                    for(String category : regionSet) {
-                        System.out.println(String.format("%d. %s", regionListIndex + 1, category));
-                        regionLArray[regionListIndex] = category;
+                    for(String region : regionList) {
+                        System.out.println(String.format("%d. %s", regionListIndex + 1, region));
                         regionListIndex++;
                     }
-                    printDivide("확인할 메뉴 번호를 입력해주세요: ");
-                    String choiceRegion = regionLArray[Integer.parseInt(sc.nextLine()) - 1];
+                    printDivide("확인할 지역 번호를 입력해주세요: ");
+                    String choiceRegion = regionList.get(Integer.parseInt(sc.nextLine()) - 1);
 
                     index = 1;
                     do  {

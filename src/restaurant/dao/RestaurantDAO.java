@@ -516,14 +516,14 @@ public class RestaurantDAO {
             sql = "SELECT *" +
                     " FROM (SELECT ROWNUM rn, r2.*" +
                     " FROM (SELECT ROWNUM, r1.*" +
-                    " FROM (SELECT res.restaurant_id, res.restaurant_name, NVL(res.rating_score, -1.0), reg.city_name, reg.si_gun_gu, LISTAGG(c.category_name, ',')" +
+                    " FROM (SELECT res.restaurant_id, res.restaurant_name, NVL(res.rating_score, -1.0), reg.city_name, reg.si_gun_gu, LISTAGG(c.category_name, ',') category_name, res.view_count, res.run_time, res.detail_address, reg.dong_eup_myeon" +
                     " FROM restaurants res" +
                     " JOIN regions reg ON res.zipcode = reg.zipcode" +
                     " JOIN restaurants_categories rc ON res.restaurant_id = rc.restaurant_id" +
                     " JOIN categories c ON c.category_id = rc.category_id" +
                     " JOIN menu m ON m.restaurant_id = res.restaurant_id" +
                     " WHERE reg.city_name = ? AND reg.si_gun_gu = ?" +
-                    " GROUP BY res.restaurant_id, res.restaurant_name, res.rating_score, reg.city_name, reg.si_gun_gu, view_count" +
+                    " GROUP BY res.restaurant_id, res.restaurant_name, res.rating_score, reg.city_name, reg.si_gun_gu, res.view_count, res.run_time, res.detail_address, reg.dong_eup_myeon" +
                     " ORDER BY rating_score desc, view_count desc, res.restaurant_id) r1) r2 )" +
                     " WHERE rn BETWEEN ? AND ?";
 
