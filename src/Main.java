@@ -93,7 +93,7 @@ public class Main {
             }
         } else {
             while(!userChoice.equals("4")) {
-                printMenu("식당 검색하기", "식당 추천", "내 정보 보기", "종료하기");
+                printMenu("식당 검색하기", "식당 추천", "내 정보 보기", "로그아웃", "종료하기");
 
                 System.out.print("번호를 입력해주세요: ");
                 userChoice = sc.nextLine();
@@ -113,6 +113,10 @@ public class Main {
                         }
                         break;
                     case "4":
+                        userId = Integer.MIN_VALUE;
+                        System.out.println("로그아웃되어 새로고침합니다.");
+                        return true;
+                    case "5":
                         System.out.println("KOSA 플레이트를 종료합니다.");
                         break;
                     default:
@@ -493,7 +497,8 @@ public class Main {
 
         loginUser = uDAO.login(loginUser);
         if (loginUser == null) {
-            throw new FindException("로그인에 실패했습니다. 아이디 혹은 비밀번호를 다시 확인해주세요.");
+            System.out.println("로그인에 실패했습니다. 아이디 혹은 비밀번호를 다시 확인해주세요.");
+            return;
         }
         userId = loginUser.getId();
 
@@ -699,18 +704,18 @@ public class Main {
                     } while (true);
                     break;
                 case "4":
-                    printDivide("3. 비밀번호 수정");
+                    printDivide("4. 비밀번호 수정");
                     System.out.println("수정할 비밀번호를 입력하세요: ");
                     String password = sc.nextLine();
                     uDAO.updateUser(userId, password);
                     printDivide(null);
                     break;
                 case "5":
-                    printDivide("4. 회원 탈퇴");
+                    printDivide("5. 회원 탈퇴");
                     uDAO.deleteUser(userId);
                     userId = Integer.MIN_VALUE;
                     printDivide(null);
-                    break;
+                    return;
                 case "6":
                     printDivide(null);
                     break;
