@@ -285,14 +285,14 @@ public class RestaurantDAO {
         try {
             String sql = " SELECT *" +
                     " FROM (SELECT *"+
-            		" FROM (SELECT res.restaurant_id, res.restaurant_name, NVL(res.rating_score, -1), res.view_count, res.run_time, res.zipcode, reg.city_name, reg.si_gun_gu, reg.dong_eup_myeon, res.detail_address, LISTAGG(c.category_name, ',')" +
+                    " FROM (SELECT res.restaurant_id, res.restaurant_name, NVL(res.rating_score, -1), res.view_count, res.run_time, res.zipcode, reg.city_name, reg.si_gun_gu, reg.dong_eup_myeon, res.detail_address, LISTAGG(c.category_name, ',') c_name, res.rating_score" +
                     " FROM restaurants res" +
                     " JOIN regions reg ON res.zipcode = reg.zipcode" +
                     " JOIN restaurants_categories rc ON res.restaurant_id = rc.restaurant_id" +
                     " JOIN categories c ON c.category_id = rc.category_id" +
                     " JOIN menu m ON m.restaurant_id = res.restaurant_id" +
-                    " GROUP BY res.restaurant_id, res.restaurant_name, res.view_count, res.run_time, res.detail_address, res.zipcode, reg.city_name, reg.si_gun_gu, reg .dong_eup_myeon, res.rating_score"+
-                    " WHERE res.restaurant_id = ?";
+                    " GROUP BY res.restaurant_id, res.restaurant_name, res.view_count, res.run_time, res.detail_address, res.zipcode, reg.city_name, reg.si_gun_gu, reg .dong_eup_myeon, res.rating_score)"+
+                    " WHERE restaurant_id = ?)";
 
             pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, restaurantId);
@@ -313,7 +313,7 @@ public class RestaurantDAO {
                 restaurantDetail.setRegion(r);
                 
                 ArrayList<CategoryDTO> categoriesList = new ArrayList<>();
-                String[] categoryNames = rs.getString("category_name").split(",");
+                String[] categoryNames = rs.getString("c_name").split(",");
 
                 HashSet<String> categoryNamesSet = new HashSet<>();
 
@@ -327,7 +327,7 @@ public class RestaurantDAO {
                     categoriesList.add(c);
                 }
                 restaurantDetail.setCategories(categoriesList);
-                restaurantDetail.setRatingScore(rs.getDouble(11));
+                restaurantDetail.setRatingScore(rs.getDouble("rating_score"));
 
                 sql = " SELECT m.*"+
                       " FROM menu m"+
@@ -337,14 +337,14 @@ public class RestaurantDAO {
                 pstmt.setInt(1, restaurantDetail.getId());
                 rs = pstmt.executeQuery();
                 ArrayList<MenuDTO> menuList = new ArrayList<>();
-                do {
+                while (rs.next()) {
                     MenuDTO mDTO = new MenuDTO();
-                    mDTO.setId(rs.getInt(12));
-                    mDTO.setName(rs.getString(13));
-                    mDTO.setPrice(rs.getInt(14));
-                    mDTO.setRestaurantId(rs.getInt(15));
+                    mDTO.setId(rs.getInt(1));
+                    mDTO.setName(rs.getString(2));
+                    mDTO.setPrice(rs.getInt(3));
+                    mDTO.setRestaurantId(rs.getInt(4));
                     menuList.add(mDTO);
-                } while (rs.next());
+                }
                 restaurantDetail.setMenu(menuList);
             }
 

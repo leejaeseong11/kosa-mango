@@ -129,9 +129,9 @@ public class RestaurantService {
             System.out.println(String.format("주소: %s %s %s %s", regionDTO.getCityName(), regionDTO.getSiGunGu(), regionDTO.getDongEupMyeon(), rDto.getDetailAddress()));
             System.out.println(String.format("영업 시간: %s", rDto.getRunTime()));
             ArrayList<MenuDTO> menuList = rDto.getMenu();
-            System.out.println("=".repeat(20) + " 메뉴 정보" + "=".repeat(20));
+            System.out.println("=".repeat(20) + " 메뉴 정보 " + "=".repeat(20));
             for (int i = 0; i < menuList.size(); i++) {
-                System.out.println(String.format("⦁ %s : %s", i+1, menuList.get(i).getName(), menuList.get(i).getPrice()));
+                System.out.println(String.format("⦁ %s : %d", menuList.get(i).getName(), menuList.get(i).getPrice()));
             }
         }
 

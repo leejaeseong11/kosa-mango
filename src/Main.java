@@ -11,7 +11,7 @@ import java.util.Scanner;
 public class Main {
     final static private int PAGE_SIZE = 5;
     static private int userId = Integer.MIN_VALUE;
-    public static void main(String[] args) throws FindException {
+    public static void main(String[] args) throws FindException, AddException {
         initService();
     }
 
@@ -44,7 +44,7 @@ public class Main {
     /**
      * 서비스 실행 첫 화면
      */
-    public static void initService() throws FindException {
+    public static void initService() throws FindException, AddException {
         System.out.println("KOSA 플레이트에 방문해주셔서 감사합니다. 무엇을 도와드릴까요?");
         printDivide(null);
         String userChoice = "-1";
@@ -153,7 +153,7 @@ public class Main {
                     System.out.println(String.format("%d. %s", quitIndex, "종료하기"));
                 }
             }
-            printDivide("전체 검색 결과: " + rService.getRestaurantCount());
+            printDivide("검색된 식당 개수: " + rService.getRestaurantCount());
             System.out.print("번호를 입력하세요: ");
             userInput = Integer.parseInt(sc.nextLine());
             if (userInput == beforeIndex) {
@@ -163,7 +163,7 @@ public class Main {
             } else if (userInput == quitIndex) {
                 break;
             } else if (userInput <= PAGE_SIZE && userInput > 0) {
-                viewDetailRestaurant(userInput);
+                viewDetailRestaurant(userInput, rService);
             } else {
                 System.out.println("잘못된 입력입니다. 처음 검색 결과로 돌아갑니다.");
                 index = 1;
@@ -171,8 +171,7 @@ public class Main {
         } while (true);
     }
 
-    public static void viewDetailRestaurant(int restaurantIndex) throws FindException, AddException {
-        RestaurantService rService = new RestaurantService(PAGE_SIZE);
+    public static void viewDetailRestaurant(int restaurantIndex, RestaurantService rService) throws FindException, AddException {
         printDivide("식당 상세 정보");
         RestaurantDTO rDTO= rService.printDetailRestaurant("VIEW_DETAIL", restaurantIndex);
         printDivide(null);
@@ -190,7 +189,7 @@ public class Main {
                     System.out.println(String.format("찜 목록에 \"%s\"가 추가되었습니다.", rDTO.getName()));
                     break;
                 } else if (userInput == 2) {
-                    printDivide("1. 리뷰 쓰기 - " + rDTO.getName());
+                    printDivide("2. 리뷰 쓰기 - " + rDTO.getName());
                     ReviewDAO reviewDAO = new ReviewDAO();
                     ReviewDTO reviewDTO = new ReviewDTO();
                     System.out.println("평가를 선택하세요: ");
@@ -213,9 +212,10 @@ public class Main {
                     reviewDAO.insertReview(reviewDTO);
                     break;
                 } else if (userInput == 3) {
+                    printDivide("3. 리뷰 보기 - " + rDTO.getName());
                     ReviewDAO reviewDAO = new ReviewDAO();
                     int index = 1;
-                    int userInputReviewOption = 0;
+                    int userInputReviewOption;
 
                     do  {
                         int beforeIndex = Integer.MIN_VALUE;
@@ -223,14 +223,13 @@ public class Main {
                             System.out.println("0. 이전으로\n");
                             beforeIndex = 0;
                         }
-                        reviewDAO.selectReviewByRestaurant(PAGE_SIZE, rDTO.getId(), index);
+//                        reviewDAO.selectReviewByRestaurant(PAGE_SIZE, rDTO.getId(), index);
                         System.out.println();
-                        if (reviewDAO.getRestaurantCount() == 0) {
+                        if (reviewDAO.getReviewCount() == 0) {
                             System.out.println("검색 결과가 없습니다.");
-                            printDivide(null);
                             break;
                         }
-                        int totalPage = rService.getRestaurantCount() % PAGE_SIZE != 0? rService.getRestaurantCount() / PAGE_SIZE + 1: rService.getRestaurantCount() / PAGE_SIZE;
+                        int totalPage = reviewDAO.getReviewCount() % PAGE_SIZE != 0? reviewDAO.getReviewCount() / PAGE_SIZE + 1: reviewDAO.getReviewCount() / PAGE_SIZE;
                         int nextIndex = Integer.MIN_VALUE;;
                         int quitIndex = Integer.MIN_VALUE;;
 
@@ -248,28 +247,27 @@ public class Main {
                                 System.out.println(String.format("%d. %s", quitIndex, "종료하기"));
                             }
                         }
-                        printDivide("전체 검색 결과: " + rService.getRestaurantCount());
+                        printDivide("검색된 리뷰 개수: " + reviewDAO.getReviewCount());
                         System.out.print("번호를 입력하세요: ");
-                        userInput = Integer.parseInt(sc.nextLine());
-                        if (userInput == beforeIndex) {
+                        userInputReviewOption = Integer.parseInt(sc.nextLine());
+                        if (userInputReviewOption == beforeIndex) {
                             index--;
-                        } else if (userInput == nextIndex) {
+                        } else if (userInputReviewOption == nextIndex) {
                             index++;
-                        } else if (userInput == quitIndex) {
+                        } else if (userInputReviewOption == quitIndex) {
                             break;
-                        } else if (userInput <= PAGE_SIZE && userInput > 0) {
-                            viewDetailRestaurant(userInput);
                         } else {
                             System.out.println("잘못된 입력입니다. 처음 검색 결과로 돌아갑니다.");
                             index = 1;
                         }
                     } while (true);
-
-                }
-                else {
+                    break;
+                } else {
                     System.out.println("잘못된 입력입니다. 다시 입력해주세요.");
+                    printDivide(null);
                 }
             } while (userInput != 4);
+            printDivide(null);
 
         }
     }
