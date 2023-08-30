@@ -65,7 +65,6 @@ public class ReviewDAO {
 					throw new AddException("DB 종료에 실패했습니다.");
 				}
 			}
-
 		}
 	}
 
@@ -166,8 +165,8 @@ public class ReviewDAO {
 	 * @return 점수별로 review 출력
 	 * @throws FindException
 	 */
-	public ArrayList<ReviewDTO> selectCategorizedRating(int pageSize, int rating, int restaurantId, int index,
-			int reviewCount) throws FindException {
+	public ArrayList<ReviewDTO> selectCategorizedRating(int pageSize, int rating, int restaurantId, int index)
+			throws FindException {
 		String selectCategorizedSQL = "SELECT rating, review_content, write_time FROM reviews WHERE restaurant_id=? AND rating =?";
 		ArrayList<ReviewDTO> categorizedReviews = new ArrayList<>();
 		try {
@@ -233,7 +232,7 @@ public class ReviewDAO {
 	 * @return
 	 * @throws FindException
 	 */
-	public ArrayList<ReviewDTO> selectReviewByRestaurant(int pageSize, int restaurantId, int index, int reviewCount)
+	public ArrayList<ReviewDTO> selectReviewByRestaurant(int pageSize, int restaurantId, int index)
 			throws FindException {
 		String selectByRestaurantSQL = "SELECT *" + " FROM (SELECT ROWNUM rn, a.*" + " FROM ("
 				+ " SELECT user_id, review_content, rating, write_time" + " FROM reviews "
@@ -303,18 +302,18 @@ public class ReviewDAO {
 	 * @return
 	 * @throws FindException
 	 */
-	public ArrayList<ReviewDTO> selectReviewByUser(int pageSize, int userId, int index, int reviewCount)
-			throws FindException {
+	public ArrayList<ReviewDTO> selectReviewByUser(int pageSize, int userId, int index) throws FindException {
 		String selectByUserSQL = "SELECT *" + " FROM (SELECT ROWNUM rn, a.*" + " FROM ("
 				+ " SELECT user_id, review_content, rating, write_time" + " FROM reviews " + " WHERE user_id = ?)  a"
 				+ ")" + " WHERE rn BETWEEN ? AND ?";
 		ArrayList<ReviewDTO> userReviews = new ArrayList<>();
+		int sizeA = 1 + pageSize * (index - 1);
+		int sizeB = pageSize * index;
 		try {
 			conn = JDBC.connect();
 			pstmt = conn.prepareStatement(selectByUserSQL);
 			pstmt.setInt(1, userId);
-			rs = pstmt.executeQuery();
-
+			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
 				ReviewDTO reviewDTO = new ReviewDTO();
 				reviewDTO.setRestaurantId(rs.getInt("restaurant_id"));
