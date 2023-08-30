@@ -26,7 +26,7 @@ public class FavoriteDAO {
 			throw new FindException("DB 연결에 실패했습니다.");
 		}
 		String selectSQL = "SELECT r.RESTAURANT_NAME, r.RESTAURANT_ID FROM FAVORITES f JOIN USERS u ON f.USER_ID = u.USER_ID JOIN RESTAURANTS r ON f.RESTAURANT_ID = r.RESTAURANT_ID "
-				+ "WHERE U.id = ?";
+				+ "WHERE u.user_id = ?";
 
 		try {
 			pstmt = conn.prepareStatement(selectSQL);

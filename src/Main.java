@@ -19,7 +19,7 @@ import java.util.Set;
 
 public class Main {
     final static private int PAGE_SIZE = 5;
-    static private int userId = Integer.MIN_VALUE;
+    static private int userId = 1;
     public static void main(String[] args) throws FindException, AddException, ModifyException, RemoveException {
         while(initService());
     }
@@ -703,7 +703,7 @@ public class Main {
             return;
         }
         for (int i = 0; i < restaurantList.size(); i++) {
-            System.out.println(String.format("%d. %s", i+1, restaurantList.get(i)));
+            System.out.println(String.format("%d. %s", i+1, restaurantList.get(i).getName()));
         }
         System.out.println("0. 이전으로");
         while (true) {
