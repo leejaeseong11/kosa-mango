@@ -21,20 +21,6 @@ public class RestaurantService {
     final static private HashMap<String, Integer> rankCategoryList = new HashMap<>();
     final static private HashMap<String, String> rankRegionList = new HashMap<>();
 	
-
-    public RestaurantService() {
-        rankCategoryList.put("한식", 1);
-        rankCategoryList.put("일식", 2);
-        rankCategoryList.put("중식", 3);
-        rankCategoryList.put("양식", 4);
-        rankCategoryList.put("분식", 5);
-        rankCategoryList.put("술", 15);
-        
-        rankRegionList.put("서울시","영등포구");
-        rankRegionList.put("서울시","마포구");
-        rankRegionList.put("서울시","송파구");
-    }
-  
     public HashMap<String, Integer> getRankCategoryList() {
         return rankCategoryList;
     }
@@ -42,6 +28,17 @@ public class RestaurantService {
     	return rankRegionList;
     }
     public RestaurantService(int pageSize) {
+        rankCategoryList.put("한식", 1);
+        rankCategoryList.put("일식", 2);
+        rankCategoryList.put("중식", 3);
+        rankCategoryList.put("양식", 4);
+        rankCategoryList.put("분식", 5);
+        rankCategoryList.put("술", 15);
+
+        rankRegionList.put("서울시","영등포구");
+        rankRegionList.put("서울시","마포구");
+        rankRegionList.put("서울시","송파구");
+
         this.pageSize = pageSize;
         restaurantIdList = new int[pageSize];
     }
@@ -73,7 +70,6 @@ public class RestaurantService {
                 } else if (searchType.equals("RANK_REGION")) {
                 	String[] searchWordsArray = searchWord.split("\\s+");
                     List<String> searchWordsList = Arrays.asList(searchWordsArray);
-                    
                    
                     String searchWord1 = searchWordsList.get(0);
                     String searchWord2 = searchWordsList.get(1);
@@ -111,20 +107,20 @@ public class RestaurantService {
      * @param orderIndex 사용자가 선택한 식당 번호 (식당의 id = restaurantIdList[orderIndex-1])
      * @throws FindException
      */
-    public RestaurantDTO printDetailRestaurant(String viewType, int orderIndex) throws FindException {
+    public RestaurantDTO printDetailRestaurant(String viewType, int index) throws FindException {
         RestaurantDAO rDao = new RestaurantDAO();
         RestaurantDTO rDto = null;
 
         if (viewType.equals("VIEW_DETAIL")) {
-            rDto = rDao.selectDetailRestaurantInfo(restaurantIdList[orderIndex-1]);
+            rDto = rDao.selectDetailRestaurantInfo(restaurantIdList[index-1]);
         } else if(viewType.equals("VIEW_RANDOM")) {
-            rDto = rDao.randomRestaurantNearMyHouse(restaurantIdList[orderIndex-1]);
+            rDto = rDao.randomRestaurantNearMyHouse(index);
         }
 
         if (rDto != null) {
             System.out.println(String.format("식당 이름: %s", rDto.getName()));
             System.out.println(String.format("카테고리: %s", rDto.getCategories().stream().map(categoryDTO -> categoryDTO.getName()).collect(Collectors.joining(" / "))));
-            System.out.println(String.format("평점: %f, 조회수: %d", rDto.getRatingScore(), rDto.getViewCount()));
+            System.out.println(String.format("평점: %.1f, 조회수: %d", rDto.getRatingScore(), rDto.getViewCount()));
             RegionDTO regionDTO = rDto.getRegion();
             System.out.println(String.format("주소: %s %s %s %s", regionDTO.getCityName(), regionDTO.getSiGunGu(), regionDTO.getDongEupMyeon(), rDto.getDetailAddress()));
             System.out.println(String.format("영업 시간: %s", rDto.getRunTime()));
