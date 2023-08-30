@@ -17,8 +17,12 @@ import java.util.*;
 public class Main {
     final static private int PAGE_SIZE = 5;
     static private int userId = Integer.MIN_VALUE;
-    public static void main(String[] args) throws FindException, AddException, ModifyException, RemoveException {
-        while(initService());
+    public static void main(String[] args) {
+        try {
+            while (initService());
+        } catch (Exception e) {
+            System.out.println(e.getMessage() + "오류가 발생하여 프로그램을 재시작합니다.");
+        }
     }
 
     /**
@@ -269,6 +273,12 @@ public class Main {
                         int nextIndex = Integer.MIN_VALUE;;
                         int quitIndex = Integer.MIN_VALUE;;
 
+                        if (totalPage == index) {
+                            System.out.println("모든 리뷰를 출력하였습니다.");
+                            printDivide("검색된 리뷰 개수: " + reviewDAO.getReviewCount());
+                            break;
+                        }
+                        printDivide("검색된 리뷰 개수: " + reviewDAO.getReviewCount());
                         if (index < totalPage) {
                             nextIndex = PAGE_SIZE + 1;
                             quitIndex = PAGE_SIZE + 2;
@@ -283,8 +293,7 @@ public class Main {
                                 System.out.println(String.format("%d. %s", quitIndex, "종료하기"));
                             }
                         }
-                        printDivide("검색된 리뷰 개수: " + reviewDAO.getReviewCount());
-                        System.out.print("번호를 입력해주세요: ");
+                        System.out.print("이전/다음/종료에 해당하는 번호를 입력해주세요: ");
                         userInputReviewOption = Integer.parseInt(sc.nextLine());
                         if (userInputReviewOption == beforeIndex) {
                             index--;

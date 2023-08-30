@@ -119,8 +119,8 @@ public class FavoriteDAO {
 		String insertSQL = "DELETE FROM favorites WHERE restaurant_id = ? AND user_id = ?";
 		try {
 			pstmt = conn.prepareStatement(insertSQL);
-			pstmt.setInt(1, userId);
-			pstmt.setInt(2, restaurantId);
+			pstmt.setInt(2, userId);
+			pstmt.setInt(1, restaurantId);
 			pstmt.executeUpdate();
 		} catch (SQLException e) {
 			throw new AddException("찜 목록 삭제에 실패했습니다.");

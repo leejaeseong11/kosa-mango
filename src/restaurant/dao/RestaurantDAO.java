@@ -100,7 +100,7 @@ public class RestaurantDAO {
                 returnedRestaurant.setId(rs.getInt(3));
                 returnedRestaurant.setName(rs.getString(4));
                 double ratingScore = rs.getDouble(5);
-                returnedRestaurant.setRatingScore(Math.round(ratingScore*100)/100.0);
+                returnedRestaurant.setRatingScore(ratingScore);
                 r.setCityName(rs.getString(6));
                 r.setSiGunGu(rs.getString(7));
                 returnedRestaurant.setRegion(r);
@@ -431,7 +431,7 @@ public class RestaurantDAO {
                 restaurantDTO.setId(rs.getInt("restaurant_id"));
                 restaurantDTO.setName(rs.getString("restaurant_name"));
                 double ratingScore = rs.getDouble(3);
-                restaurantDTO.setRatingScore(Math.round(ratingScore * 100) / 100.0);
+                restaurantDTO.setRatingScore(ratingScore);
                 restaurantDTO.setViewCount(rs.getInt("view_count"));
                 restaurantDTO.setRunTime(rs.getString("run_time"));
                 restaurantDTO.setDetailAddress(rs.getString("detail_address"));
@@ -545,7 +545,7 @@ public class RestaurantDAO {
                 restaurantDTO.setId(rs.getInt("restaurant_id"));
                 restaurantDTO.setName(rs.getString("restaurant_name"));
                 double ratingScore = rs.getDouble(3);
-                restaurantDTO.setRatingScore(Math.round(ratingScore * 100) / 100.0);
+                restaurantDTO.setRatingScore(ratingScore);
                 restaurantDTO.setViewCount(rs.getInt("view_count"));
                 restaurantDTO.setRunTime(rs.getString("run_time"));
                 restaurantDTO.setDetailAddress(rs.getString("detail_address"));
