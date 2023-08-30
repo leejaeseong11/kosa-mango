@@ -76,6 +76,10 @@ public class Main {
                         break;
                     case "3":
                         login("3. 로그인");
+                        if (userId != Integer.MIN_VALUE) {
+                            System.out.println("로그인이 되어 새로고침합니다.");
+                            return true;
+                        }
                         break;
                     case "4":
                         signup("4. 회원 가입");
