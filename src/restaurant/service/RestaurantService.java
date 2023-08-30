@@ -111,7 +111,7 @@ public class RestaurantService {
      * @param orderIndex 사용자가 선택한 식당 번호 (식당의 id = restaurantIdList[orderIndex-1])
      * @throws FindException
      */
-    public void printDetailRestaurant(String viewType, int orderIndex) throws FindException {
+    public RestaurantDTO printDetailRestaurant(String viewType, int orderIndex) throws FindException {
         RestaurantDAO rDao = new RestaurantDAO();
         RestaurantDTO rDto = null;
 
@@ -134,5 +134,7 @@ public class RestaurantService {
                 System.out.println(String.format("⦁ %s : %s", i+1, menuList.get(i).getName(), menuList.get(i).getPrice()));
             }
         }
+
+        return rDto;
     }
 }
