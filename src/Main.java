@@ -1,10 +1,12 @@
 import exception.FindException;
+import restaurant.service.RestaurantService;
+
 import java.util.Scanner;
 
 public class Main {
     final static private int PAGE_SIZE = 5;
      static private String userId = "";
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FindException {
         initService();
     }
 
@@ -17,7 +19,6 @@ public class Main {
             System.out.println(String.format("%d. %s", i+1, menu[i]));
         }
     }
-    /
 
     /**
      * 사용자가 선택한 메뉴 출력
@@ -31,32 +32,33 @@ public class Main {
             int remainDivide = DIVIDE_REPEAT_COUNT - menu.length() - 2;
             System.out.print("=".repeat(remainDivide / 2));
             System.out.print(String.format(" %s ", menu));
-            System.out.print("=".repeat(remainDivide / 2));
+            System.out.println("=".repeat(remainDivide / 2));
         }
     }
 
     /**
      * 서비스 실행 첫 화면
      */
-    public static void initService() {
+    public static void initService() throws FindException {
         System.out.println("KOSA 플레이트에 방문해주셔서 감사합니다. 무엇을 도와드릴까요?");
-        System.out.println("=".repeat(DIVIDE_REPEAT_COUNT));
+        printDivide(null);
         String userChoice = "-1";
 
         Scanner sc = new Scanner(System.in);
         if (userId.equals("")) {
             while(!userChoice.equals("5")) {
                 printMenu("식당 검색하기", "식당 추천", "로그인", "회원 가입", "종료하기");
+                printDivide(null);
 
                 System.out.print("번호를 입력해주세요: ");
                 userChoice = sc.nextLine();
 
                 switch (userChoice) {
                     case "1":
-                        searchRestaurant();
+                        searchRestaurant("1.식당 검색하기");
                         break;
                     case "2":
-                        recommendRestaurant();
+                        recommendRestaurant("2. 식당 추천");
                         break;
                     case "3":
                         login();
@@ -75,15 +77,15 @@ public class Main {
             while(!userChoice.equals("4")) {
                 printMenu("식당 검색하기", "식당 추천", "내 정보 보기", "종료하기");
 
-                System.out.print("번호를 입력해주세요: ");
+                System.out.print("번호를 입력하세요: ");
                 userChoice = sc.nextLine();
 
                 switch (userChoice) {
                     case "1":
-                        searchRestaurant();
+                        searchRestaurant("1. 식당 검색하기");
                         break;
                     case "2":
-                        recommendRestaurant();
+                        recommendRestaurant("2. 식당 추천");
                         break;
                     case "3":
                         viewMyInfo();
@@ -105,20 +107,73 @@ public class Main {
     /**
      * 검색 화면 출력
      */
-    public static void searchRestaurant() {
-        printDivide(null);
+    public static void searchRestaurant(String menu) throws FindException {
+        printDivide(menu);
         Scanner sc = new Scanner(System.in);
-        System.out.println("검색할 지역, 식당 또는 메뉴를 입력해주세요:");
+        System.out.print("검색할 지역, 식당 또는 메뉴를 입력해주세요: ");
+        String keyword = sc.nextLine();
+        System.out.println();
+        RestaurantService rService = new RestaurantService(PAGE_SIZE);
 
-//        String keyword = sc.nextLine();
-//        RestaurantService rService = new RestaurantService();
-//        rService.searchRestaurants(keyword, 1);
-//        int totalResultCount = rService.getRestaurantCount();
-        sc.close();
+        int index = 1;
+        int userInput = 0;
+        do  {
+            int beforeIndex = Integer.MIN_VALUE;
+            if (index != 1) {
+                System.out.println("0. 이전으로\n");
+                beforeIndex = 0;
+            }
+            rService.printRestaurantList("GENERAL_SEARCH", keyword, index);
+            System.out.println();
+            if (rService.getRestaurantCount() == 0) {
+                System.out.println("검색 결과가 없습니다.");
+                printDivide(null);
+                break;
+            }
+            int totalPage = rService.getRestaurantCount() % PAGE_SIZE != 0? rService.getRestaurantCount() / PAGE_SIZE + 1: rService.getRestaurantCount() / PAGE_SIZE;
+            int nextIndex = Integer.MIN_VALUE;;
+            int quitIndex = Integer.MIN_VALUE;;
+
+            if (index < totalPage) {
+                nextIndex = PAGE_SIZE + 1;
+                quitIndex = PAGE_SIZE + 2;
+                System.out.println(String.format("%d. %s", nextIndex, "다음으로"));
+                System.out.println(String.format("%d. %s", quitIndex, "종료하기"));
+            } else if (index == totalPage) {
+                if (rService.getRestaurantCount() % PAGE_SIZE == 0) {
+                    quitIndex = PAGE_SIZE + 1;
+                    System.out.println(String.format("%d. %s", PAGE_SIZE + 1, "종료하기"));
+                } else {
+                    quitIndex = rService.getRestaurantCount() % PAGE_SIZE + 1;
+                    System.out.println(String.format("%d. %s", quitIndex, "종료하기"));
+                }
+            }
+            printDivide("전체 검색 결과: " + rService.getRestaurantCount());
+            System.out.print("번호를 입력하세요: ");
+            userInput = Integer.parseInt(sc.nextLine());
+            if (userInput == beforeIndex) {
+                index--;
+            } else if (userInput == nextIndex) {
+                index++;
+            } else if (userInput == quitIndex) {
+                break;
+            } else if (userInput <= PAGE_SIZE && userInput > 0) {
+                viewDetailRestaurant(userInput);
+            } else {
+                System.out.println("잘못된 입력입니다. 처음 검색 결과로 돌아갑니다.");
+                index = 1;
+            }
+        } while (true);
     }
 
-    public static void recommendRestaurant() {
-        System.out.println("=".repeat(DIVIDE_REPEAT_COUNT));
+    public static void viewDetailRestaurant(int restaurantIndex) throws FindException {
+        RestaurantService rService = new RestaurantService(PAGE_SIZE);
+        printDivide("식당 상세 정보");
+        rService.printDetailRestaurant("VIEW_DETAIL", restaurantIndex);
+        printDivide(null);
+    }
+    public static void recommendRestaurant(String menu) {
+        printDivide(menu);
         String userChoice = "-1";
         Scanner sc = new Scanner(System.in);
         System.out.println("번호를 입력해주세요:");
@@ -145,13 +200,12 @@ public class Main {
                     System.out.println("잘못된 입력입니다. 다시 입력해주세요.");
             }
         }
-        sc.close();
     }
     public static void login() {
-        System.out.println("=".repeat(DIVIDE_REPEAT_COUNT));
+        printDivide(null);
     }
     public static void signup() {
-        System.out.println("=".repeat(DIVIDE_REPEAT_COUNT));
+        printDivide(null);
         Scanner sc = new Scanner(System.in);
 
         while(true) {
@@ -168,10 +222,9 @@ public class Main {
             break;
         }
 
-        sc.close();
     }
     public static void viewMyInfo() {
-        System.out.println("=".repeat(DIVIDE_REPEAT_COUNT));
+        printDivide(null);
         String userChoice = "-1";
         Scanner sc = new Scanner(System.in);
         System.out.println("번호를 입력해주세요:");
@@ -204,7 +257,6 @@ public class Main {
                     System.out.println("잘못된 입력입니다. 다시 입력해주세요.");
             }
         }
-        sc.close();
     }
 
 
