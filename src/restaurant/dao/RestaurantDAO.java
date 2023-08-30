@@ -408,7 +408,7 @@ public class RestaurantDAO {
             sql = "SELECT *" +
                     " FROM (SELECT ROWNUM rn, r2.*" +
                     " FROM (SELECT ROWNUM, r1.*" +
-                    " FROM (SELECT res.restaurant_id, res.restaurant_name, NVL(res.rating_score, -1.0), reg.city_name, reg.si_gun_gu, reg.dong_eup_myeon, LISTAGG(c.category_name, ',') category_name, res.view_count, res.run_time, res.detail_address" +
+                    " FROM (SELECT res.restaurant_id, res.restaurant_name, NVL(res.rating_score, -1.0) rating_score, reg.city_name, reg.si_gun_gu, reg.dong_eup_myeon, LISTAGG(c.category_name, ',') category_name, res.view_count, res.run_time, res.detail_address" +
                     " FROM restaurants res" +
                     " JOIN regions reg ON res.zipcode = reg.zipcode" +
                     " JOIN restaurants_categories rc ON res.restaurant_id = rc.restaurant_id" +
@@ -430,8 +430,7 @@ public class RestaurantDAO {
                 RegionDTO r = new RegionDTO();
                 restaurantDTO.setId(rs.getInt("restaurant_id"));
                 restaurantDTO.setName(rs.getString("restaurant_name"));
-                double ratingScore = rs.getDouble(3);
-                restaurantDTO.setRatingScore(ratingScore);
+                restaurantDTO.setRatingScore(rs.getDouble("rating_score"));
                 restaurantDTO.setViewCount(rs.getInt("view_count"));
                 restaurantDTO.setRunTime(rs.getString("run_time"));
                 restaurantDTO.setDetailAddress(rs.getString("detail_address"));
@@ -521,7 +520,7 @@ public class RestaurantDAO {
             sql = "SELECT *" +
                     " FROM (SELECT ROWNUM rn, r2.*" +
                     " FROM (SELECT ROWNUM, r1.*" +
-                    " FROM (SELECT res.restaurant_id, res.restaurant_name, NVL(res.rating_score, -1.0), reg.city_name, reg.si_gun_gu, LISTAGG(c.category_name, ',') category_name, res.view_count, res.run_time, res.detail_address, reg.dong_eup_myeon" +
+                    " FROM (SELECT res.restaurant_id, res.restaurant_name, NVL(res.rating_score, -1.0) rating_score, reg.city_name, reg.si_gun_gu, LISTAGG(c.category_name, ',') category_name, res.view_count, res.run_time, res.detail_address, reg.dong_eup_myeon" +
                     " FROM restaurants res" +
                     " JOIN regions reg ON res.zipcode = reg.zipcode" +
                     " JOIN restaurants_categories rc ON res.restaurant_id = rc.restaurant_id" +
@@ -544,8 +543,7 @@ public class RestaurantDAO {
                 RegionDTO r = new RegionDTO();
                 restaurantDTO.setId(rs.getInt("restaurant_id"));
                 restaurantDTO.setName(rs.getString("restaurant_name"));
-                double ratingScore = rs.getDouble(3);
-                restaurantDTO.setRatingScore(ratingScore);
+                restaurantDTO.setRatingScore(rs.getDouble("rating_score"));
                 restaurantDTO.setViewCount(rs.getInt("view_count"));
                 restaurantDTO.setRunTime(rs.getString("run_time"));
                 restaurantDTO.setDetailAddress(rs.getString("detail_address"));

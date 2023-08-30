@@ -21,7 +21,7 @@ public class Main {
         try {
             while (initService());
         } catch (Exception e) {
-            System.out.println(e.getMessage() + "오류가 발생하여 프로그램을 재시작합니다.");
+            System.out.println(e.getMessage() + "오류가 발생하여 프로그램을 종료합니다.");
         }
     }
 
