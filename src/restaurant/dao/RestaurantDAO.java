@@ -276,7 +276,12 @@ public class RestaurantDAO {
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         try {
-            String sql = " SELECT *" +
+            String sql = "UPDATE restaurants SET view_count=NVL(view_count,0)+1 WHERE restaurant_id = ?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, restaurantId);
+            pstmt.executeUpdate();
+
+            sql = " SELECT *" +
                     " FROM (SELECT *"+
                     " FROM (SELECT res.restaurant_id, res.restaurant_name, NVL(res.rating_score, -1), res.view_count, res.run_time, res.zipcode, reg.city_name, reg.si_gun_gu, reg.dong_eup_myeon, res.detail_address, LISTAGG(c.category_name, ',') c_name, res.rating_score" +
                     " FROM restaurants res" +
