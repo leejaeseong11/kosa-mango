@@ -177,7 +177,6 @@ public class ReviewDAO {
 			pstmt.setInt(2, rating);
 			rs = pstmt.executeQuery();
 			// main에서 sdf method를 사용하면 리뷰에 시간까지 출력 가능
-			SimpleDateFormat sdf = new SimpleDateFormat("yy-MM-dd HH:mm:ss");
 			while (rs.next()) {
 				ReviewDTO reviewDTO = new ReviewDTO();
 				// get으로 가져와서 set으로 dto에 값을 넣어준다

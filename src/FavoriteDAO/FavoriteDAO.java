@@ -14,18 +14,18 @@ import restaurant.dto.RestaurantDTO;
 public class FavoriteDAO {
 
 	// 회원아이디 찜 식당 조회
-	public ArrayList<String> selectFavoritesByUserId(int userId) throws FindException {
+	public ArrayList<RestaurantDTO> selectFavoritesByUserId(int userId) throws FindException {
 		PreparedStatement pstmt = null;
 		Connection conn = null;
 		ResultSet rs = null;
-		ArrayList<String> list = new ArrayList<>();
+		ArrayList<RestaurantDTO> list = new ArrayList<>();
 
 		try {
 			conn = JDBC.connect();
 		} catch (Exception e) {
 			throw new FindException("DB 연결에 실패했습니다.");
 		}
-		String selectSQL = "SELECT r.RESTAURANT_NAME FROM FAVORITES f JOIN USERS u ON f.USER_ID = u.USER_ID JOIN RESTAURANTS r ON f.RESTAURANT_ID = r.RESTAURANT_ID "
+		String selectSQL = "SELECT r.RESTAURANT_NAME, r.RESTAURANT_ID FROM FAVORITES f JOIN USERS u ON f.USER_ID = u.USER_ID JOIN RESTAURANTS r ON f.RESTAURANT_ID = r.RESTAURANT_ID "
 				+ "WHERE U.id = ?";
 
 		try {
@@ -34,7 +34,10 @@ public class FavoriteDAO {
 			rs = pstmt.executeQuery();
 
 			while (rs.next()) {
-				list.add(rs.getString(1)); // 검색 결과 리스트 추가
+				RestaurantDTO rDTO = new RestaurantDTO();
+				rDTO.setName(rs.getString(1));
+				rDTO.setId(rs.getInt(2));
+				list.add(rDTO); // 검색 결과 리스트 추가
 			}
 
 		} catch (SQLException e) {
