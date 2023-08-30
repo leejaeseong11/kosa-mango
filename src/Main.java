@@ -214,15 +214,15 @@ public class Main {
                     printDivide("2. 리뷰 쓰기 - " + rDTO.getName());
                     ReviewDAO reviewDAO = new ReviewDAO();
                     ReviewDTO reviewDTO = new ReviewDTO();
-                    System.out.println("평가를 선택하세요: ");
-                    System.out.println("1. 맛있어요. / 2. 그냥 그래요. / 3. 별로에요.");
+                    System.out.print("평가를 선택하세요 ");
+                    System.out.print("(1. 맛있어요 / 2. 그냥 그래요 / 3. 별로에요): ");
                     int rating = Integer.parseInt(sc.nextLine());
                     if (rating == 1) {
-                        rDTO.setRatingScore(5);
+                        reviewDTO.setRating(5);
                     } else if (rating == 2) {
-                        rDTO.setRatingScore(3);
+                        reviewDTO.setRating(3);
                     } else {
-                        rDTO.setRatingScore(1);
+                        reviewDTO.setRating(1);
                     }
 
                     System.out.print("리뷰 내용을 한 줄로 입력해주세요: ");

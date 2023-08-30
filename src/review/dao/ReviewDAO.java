@@ -27,7 +27,7 @@ public class ReviewDAO {
 	 * @throws AddException
 	 */
 	public void insertReview(ReviewDTO reviewDTO) throws AddException {
-		String insertSQL = "INSERT INTO reviews (review_id, review_content, rating, write_Time, restaurant_id, user_id) VALUES (reviews_seq.NEXTVAL,?, ?,sysdate,?,?)";
+		String insertSQL = "INSERT INTO reviews (review_id, review_content, rating, write_Time, restaurant_id, user_id) VALUES (SEQ_REVIEW_ID.NEXTVAL, ?, ?,sysdate,?,?)";
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -40,6 +40,7 @@ public class ReviewDAO {
 			pstmt.setInt(4, reviewDTO.getUserId());
 			pstmt.executeUpdate();
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new AddException("DB 연결에 실패했습니다.");
 		} finally {
 			if (rs != null) {
