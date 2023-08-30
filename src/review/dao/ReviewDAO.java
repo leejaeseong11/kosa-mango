@@ -19,8 +19,18 @@ public class ReviewDAO {
 	PreparedStatement pstmt = null;
 	ResultSet rs = null;
 	int pageSize = 10;
+	private int reviewCount;
 
-	// review_id는 oralce sequence로 채운다
+	public int getReviewCount() throws FindException {
+		return reviewCount;
+	}
+
+	/**
+	 * review_id는 oralce sequence로 채운다
+	 * 
+	 * @param reviewDTO
+	 * @throws AddException
+	 */
 	public void insertReview(ReviewDTO reviewDTO) throws AddException {
 		String insertSQL = "INSERT INTO reviews (review_id, review_content, rating, write_Time, restaurant_id, user_id) VALUES (reviews_seq.NEXTVAL,?, ?,sysdate,?,?)";
 		try {
@@ -59,9 +69,13 @@ public class ReviewDAO {
 		}
 	}
 
-	// review_id를 매개변수로 받아서 목록의 review번호와 일치하면 삭제 reviewId는 review목록. 사용자 정보화면으로
-	// 이동하면 사용자가 작성한 리뷰목록이 나옴, 1,2,3..이렇게 그래서 그 번호를 입력받으면 번호에 해당하는 리뷰 삭제
-	// @param id review목록의 번호
+	/**
+	 * review_id를 매개변수로 받아서 목록의 review번호와 일치하면 삭제 reviewId는 review목록. 사용자 정보화면으로
+	 * 이동하면 사용자가 작성한 리뷰목록이 나옴, 1,2,3..이렇게 그래서 그 번호를 입력받으면 번호에 해당하는 리뷰 삭제
+	 * 
+	 * @param reviewId review목록의 번호
+	 * @throws RemoveException
+	 */
 	public void deleteReview(int reviewId) throws RemoveException {
 		String deleteSQL = "DELETE FROM reviews WHERE review_id=?";
 		try {
@@ -96,8 +110,14 @@ public class ReviewDAO {
 		}
 	}
 
-	// 사용자 화면에서 본인이 작성한 리뷰목록을 보여줌, 1번 리뷰를 선택하면 1번 리뷰를 수정 가능
-	// @param content review내용, id review목록의 번호
+	/**
+	 * 사용자 화면에서 본인이 작성한 리뷰목록을 보여줌, 1번 리뷰를 선택하면 1번 리뷰를 수정 가능
+	 * 
+	 * @param content  review내용
+	 * @param rating
+	 * @param reviewId
+	 * @throws ModifyException
+	 */
 	public void updateReview(String content, int rating, int reviewId) throws ModifyException {
 		String updateSQL = "UPDATE reviews SET review_content = ?, write_Time=sysdate, rating=? WHERE review_id=?";
 		try {
@@ -134,12 +154,20 @@ public class ReviewDAO {
 		}
 	}
 
-	// database에서 rating을 얻어와야 함, 그 후 점수별로 review를 보여줘야 함
-	// @param restaurantId, rating
-	// @return 점수별로 review 출력
-	// pageSize는 목록의 번호, main class로부터 받아옴
-	public ArrayList<ReviewDTO> selectCategorizedRating(int pageSize, int rating, int restaurantId)
-			throws FindException {
+	/**
+	 * database에서 rating을 얻어와야 함, 그 후 점수별로 review를 보여줘야 함, pageSize는 목록의 번호, main
+	 * class로부터 받아옴
+	 * 
+	 * @param pageSize
+	 * @param rating
+	 * @param restaurantId
+	 * @param index
+	 * @param reviewCount
+	 * @return 점수별로 review 출력
+	 * @throws FindException
+	 */
+	public ArrayList<ReviewDTO> selectCategorizedRating(int pageSize, int rating, int restaurantId, int index,
+			int reviewCount) throws FindException {
 		String selectCategorizedSQL = "SELECT rating, review_content, write_time FROM reviews WHERE restaurant_id=? AND rating =?";
 		ArrayList<ReviewDTO> categorizedReviews = new ArrayList<>();
 		try {
@@ -157,9 +185,15 @@ public class ReviewDAO {
 				reviewDTO.setRating(rs.getInt("rating"));
 				reviewDTO.setContent(rs.getString("review_content"));
 				reviewDTO.setWritingTime(rs.getDate("write_time"));
-				// 년, 월, 일, 시 출력을 확인
-				System.out.println(sdf.format(reviewDTO.getWritingTime()));
 				categorizedReviews.add(reviewDTO);
+			}
+			selectCategorizedSQL = "SELECT COUNT(*) FROM reviews WHERE restaurant_id=? AND rating =?";
+			pstmt = conn.prepareStatement(selectCategorizedSQL);
+			pstmt.setInt(1, restaurantId);
+			pstmt.setInt(2, rating);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				this.reviewCount = rs.getInt("restaurant_id");
 			}
 		} catch (Exception e) {
 			throw new FindException("DB  연결에 실패했습니다.");
@@ -189,11 +223,17 @@ public class ReviewDAO {
 		return categorizedReviews;
 	}
 
-	// restaurant로 이동하면 그 restaurant에 해당하는 review들만 출력
-	// @param restaurantId 식당 번호, index 목록번호
-	// @return restaurantReviews, 반환값 ArrayList<ReviewDTO>
-
-	public ArrayList<ReviewDTO> selectReviewByRestaurant(int pageSize, int restaurantId, int index)
+	/**
+	 * restaurant로 이동하면 그 restaurant에 해당하는 review들만 출력
+	 * 
+	 * @param pageSize
+	 * @param restaurantId
+	 * @param index
+	 * @param reviewCount
+	 * @return
+	 * @throws FindException
+	 */
+	public ArrayList<ReviewDTO> selectReviewByRestaurant(int pageSize, int restaurantId, int index, int reviewCount)
 			throws FindException {
 		String selectByRestaurantSQL = "SELECT *" + " FROM (SELECT ROWNUM rn, a.*" + " FROM ("
 				+ " SELECT user_id, review_content, rating, write_time" + " FROM reviews "
@@ -218,38 +258,53 @@ public class ReviewDAO {
 				reviewDTO.setWritingTime(rs.getDate("write_time"));
 				restaurantReviews.add(reviewDTO);
 			}
+			selectByRestaurantSQL = "SELECT COUNT(*) FROM reviews WHERE restaurant_id = ?";
+			pstmt = conn.prepareStatement(selectByRestaurantSQL);
+			pstmt.setInt(1, restaurantId);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				this.reviewCount = rs.getInt("restaurant_id");
+			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new FindException("DB 연결에 실패했습니다.");
 		} finally {
 			if (rs != null) {
 				try {
 					rs.close();
 				} catch (SQLException e) {
-					e.printStackTrace();
+					throw new FindException("DB 종료에 실패했습니다.");
 				}
 			}
 			if (pstmt != null) {
 				try {
 					pstmt.close();
 				} catch (SQLException e) {
-					e.printStackTrace();
+					throw new FindException("DB 종료에 실패했습니다.");
 				}
 			}
 			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException e) {
-					e.printStackTrace();
+					throw new FindException("DB 종료에 실패했습니다.");
 				}
 			}
 		}
 		return restaurantReviews;
 	}
 
-	// 사용자 화면에서 내가 쓴 리뷰들만 출력
-	// @param userId
-	// @return
-	public ArrayList<ReviewDTO> selectReviewByUser(int pageSize, int userId) throws FindException {
+	/**
+	 * 사용자 화면에서 내가 쓴 리뷰들만 출력
+	 * 
+	 * @param pageSize
+	 * @param userId
+	 * @param index
+	 * @param reviewCount
+	 * @return
+	 * @throws FindException
+	 */
+	public ArrayList<ReviewDTO> selectReviewByUser(int pageSize, int userId, int index, int reviewCount)
+			throws FindException {
 		String selectByUserSQL = "SELECT *" + " FROM (SELECT ROWNUM rn, a.*" + " FROM ("
 				+ " SELECT user_id, review_content, rating, write_time" + " FROM reviews " + " WHERE user_id = ?)  a"
 				+ ")" + " WHERE rn BETWEEN ? AND ?";
@@ -267,8 +322,14 @@ public class ReviewDAO {
 				reviewDTO.setRating(rs.getInt("rating"));
 				reviewDTO.setWritingTime(rs.getDate("write_time"));
 				reviewDTO.setUserId(rs.getInt("user_id"));
-
 				userReviews.add(reviewDTO);
+			}
+			selectByUserSQL = "SELECT COUNT(*) FROM reviews WHERE user_id = ?";
+			pstmt = conn.prepareStatement(selectByUserSQL);
+			pstmt.setInt(1, userId);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				this.reviewCount = rs.getInt("user_id");
 			}
 		} catch (Exception e) {
 			throw new FindException("DB 연결에 실패했습니다.");
@@ -278,7 +339,6 @@ public class ReviewDAO {
 					rs.close();
 				} catch (SQLException e) {
 					throw new FindException("DB 종료에 실패했습니다.");
-
 				}
 			}
 			if (pstmt != null) {
