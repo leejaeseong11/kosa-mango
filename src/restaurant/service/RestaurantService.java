@@ -113,7 +113,7 @@ public class RestaurantService {
             rDto = rDao.randomRestaurantNearMyHouse(index);
         }
 
-        if (rDto != null) {
+        if (rDto.getName() != null) {
             System.out.println(String.format("식당 이름: %s", rDto.getName()));
             System.out.println(String.format("카테고리: %s", rDto.getCategories().stream().map(categoryDTO -> categoryDTO.getName()).collect(Collectors.joining(" / "))));
             System.out.println(String.format("평점: %.1f, 조회수: %d", rDto.getRatingScore(), rDto.getViewCount()));
@@ -125,6 +125,8 @@ public class RestaurantService {
             for (int i = 0; i < menuList.size(); i++) {
                 System.out.println(String.format("⦁ %s : %d", menuList.get(i).getName(), menuList.get(i).getPrice()));
             }
+        } else {
+            System.out.println("표시할 식당이 없습니다.");
         }
 
         return rDto;

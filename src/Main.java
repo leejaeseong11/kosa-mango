@@ -21,7 +21,7 @@ public class Main {
         try {
             while (initService());
         } catch (Exception e) {
-            System.out.println(e.getMessage() + "오류가 발생하여 프로그램을 종료합니다.");
+            System.out.println("오류가 발생하여 프로그램을 종료합니다.");
         }
     }
 
@@ -178,7 +178,13 @@ public class Main {
             }
             printDivide("검색된 식당 개수: " + rService.getRestaurantCount());
             System.out.print("번호를 입력해주세요: ");
-            userInput = Integer.parseInt(sc.nextLine());
+            try {
+                userInput = Integer.parseInt(sc.nextLine());
+            } catch (Exception e) {
+                System.out.println("숫자를 입력해주세요.");
+                printDivide(null);
+                continue;
+            }
             if (userInput == beforeIndex) {
                 index--;
             } else if (userInput == nextIndex) {
@@ -199,12 +205,18 @@ public class Main {
         RestaurantDTO rDTO= rService.printDetailRestaurant("VIEW_DETAIL", restaurantIndex);
         printDivide(null);
         Scanner sc = new Scanner(System.in);
-        int userInput;
+        int userInput = 0;
         if (userId != Integer.MIN_VALUE) {
             do {
                 printMenu("찜 하기", "리뷰 쓰기", "전체 리뷰 보기", "별점 별 리뷰 보기", "이전으로");
                 System.out.print("번호를 입력해주세요: ");
-                userInput = Integer.parseInt(sc.nextLine());
+                try {
+                    userInput = Integer.parseInt(sc.nextLine());
+                } catch (Exception e) {
+                    System.out.println("숫자를 입력해주세요.");
+                    printDivide(null);
+                    continue;
+                }
                 if (userInput == 1) {
                     printDivide("1. 찜 하기");
                     FavoriteDAO fDAO = new FavoriteDAO();
@@ -221,7 +233,14 @@ public class Main {
                     ReviewDTO reviewDTO = new ReviewDTO();
                     System.out.print("평가를 선택하세요 ");
                     System.out.print("(1. 맛있어요 / 2. 그냥 그래요 / 3. 별로에요): ");
-                    int rating = Integer.parseInt(sc.nextLine());
+                    int rating;
+                    try {
+                        rating = Integer.parseInt(sc.nextLine());
+                    } catch (Exception e) {
+                        System.out.println("숫자를 입력해주세요.");
+                        printDivide(null);
+                        continue;
+                    }
                     if (rating == 1) {
                         reviewDTO.setRating(5);
                     } else if (rating == 2) {
@@ -294,7 +313,13 @@ public class Main {
                             }
                         }
                         System.out.print("이전/다음/종료에 해당하는 번호를 입력해주세요: ");
-                        userInputReviewOption = Integer.parseInt(sc.nextLine());
+                        try {
+                            userInputReviewOption = Integer.parseInt(sc.nextLine());
+                        } catch (Exception e) {
+                            System.out.println("숫자를 입력해주세요.");
+                            printDivide(null);
+                            continue;
+                        }
                         if (userInputReviewOption == beforeIndex) {
                             index--;
                         } else if (userInputReviewOption == nextIndex) {
@@ -369,8 +394,17 @@ public class Main {
                         categoryArray[categoryListIndex] = category;
                         categoryListIndex++;
                     }
-                    printDivide("확인할 메뉴 번호를 입력해주세요: ");
-                    String choiceMenu = categoryArray[Integer.parseInt(sc.nextLine()) - 1];
+                    printDivide(null);
+                    System.out.println("확인할 메뉴 번호를 입력해주세요:");
+                    String choiceMenu = "";
+                    try {
+                        choiceMenu = categoryArray[Integer.parseInt(sc.nextLine()) - 1];
+                    } catch (Exception e) {
+                        System.out.println("숫자를 입력해주세요.");
+                        printDivide(null);
+                        continue;
+                    }
+                    printDivide(choiceMenu + " 맛집");
 
                     index = 1;
                     do  {
@@ -406,7 +440,13 @@ public class Main {
                         }
                         printDivide("랭크된 식당 개수: " + rService.getRestaurantCount());
                         System.out.print("상세 정보를 확인할 식당 번호를 입력해주세요: ");
-                        userInput = Integer.parseInt(sc.nextLine());
+                        try {
+                            userInput = Integer.parseInt(sc.nextLine());
+                        } catch (Exception e) {
+                            System.out.println("숫자를 입력해주세요.");
+                            printDivide(null);
+                            continue;
+                        }
                         if (userInput == beforeIndex) {
                             index--;
                         } else if (userInput == nextIndex) {
@@ -434,8 +474,18 @@ public class Main {
                         }
 
                     }
-                    printDivide("확인할 지역 번호를 입력해주세요: ");
-                    String choiceRegion = regionList.get(Integer.parseInt(sc.nextLine()) - 1);
+
+                    printDivide(null);
+                    System.out.print("확인할 메뉴 번호를 입력해주세요: ");
+                    String choiceRegion = "";
+                    try {
+                        choiceRegion = regionList.get(Integer.parseInt(sc.nextLine()) - 1);
+                    } catch(Exception e) {
+                        System.out.println("숫자를 입력해주세요.");
+                        printDivide(null);
+                        continue;
+                    }
+                    printDivide(choiceRegion + " 맛집");
 
                     index = 1;
                     do  {
@@ -471,7 +521,13 @@ public class Main {
                         }
                         printDivide("랭크된 식당 개수: " + rService.getRestaurantCount());
                         System.out.print("상세 정보를 확인할 식당 번호를 입력해주세요: ");
-                        userInput = Integer.parseInt(sc.nextLine());
+                        try {
+                            userInput = Integer.parseInt(sc.nextLine());
+                        } catch (Exception e) {
+                            System.out.println("숫자를 입력해주세요.");
+                            printDivide(null);
+                            continue;
+                        }
                         if (userInput == beforeIndex) {
                             index--;
                         } else if (userInput == nextIndex) {
@@ -644,7 +700,13 @@ public class Main {
                         }
                         printDivide("검색된 리뷰 개수: " + rDAO.getReviewCount());
                         System.out.print("수정할 리뷰 번호를 입력해주세요: ");
-                        userInputReviewOption = Integer.parseInt(sc.nextLine());
+                        try{
+                            userInputReviewOption = Integer.parseInt(sc.nextLine());
+                        } catch (Exception e) {
+                            System.out.println("숫자를 입력해주세요.");
+                            printDivide(null);
+                            continue;
+                        }
                         if (userInputReviewOption == beforeIndex) {
                             index--;
                         } else if (userInputReviewOption == nextIndex) {
@@ -656,8 +718,19 @@ public class Main {
                             System.out.print("수정할 리뷰 내용을 입력하세요: ");
                             String content = sc.nextLine();
                             System.out.print("수정할 평점을 입력하세요: ");
-                            int rating = Integer.parseInt(sc.nextLine());
-                            rDAO.updateReview(content, rating, reviewList.get(userInputReviewOption - 1).getId());
+                            int rating = 0;
+                            try {
+                                rating = Integer.parseInt(sc.nextLine());
+                            } catch (Exception e) {
+                                System.out.println("숫자를 입력해주세요.");
+                                printDivide(null);
+                                continue;
+                            }
+                            if (rating == 1 || rating == 3 || rating == 5) {
+                                rDAO.updateReview(content, rating, reviewList.get(userInputReviewOption - 1).getId());
+                            } else {
+                                System.out.println("올바른 평점이 아닙니다. 리뷰가 수정되지 않습니다.");
+                            }
                             printDivide(null);
                             break;
                         } else {
@@ -709,7 +782,13 @@ public class Main {
                         }
                         printDivide("검색된 리뷰 개수: " + rDAO.getReviewCount());
                         System.out.print("삭제할 리뷰 번호를 입력해주세요: ");
-                        userInputReviewOption = Integer.parseInt(sc.nextLine());
+                        try {
+                            userInputReviewOption = Integer.parseInt(sc.nextLine());
+                        } catch (Exception e) {
+                            System.out.println("숫자를 입력해주세요.");
+                            printDivide(null);
+                            continue;
+                        }
                         if (userInputReviewOption == beforeIndex) {
                             index--;
                         } else if (userInputReviewOption == nextIndex) {
@@ -773,7 +852,14 @@ public class Main {
             printDivide(null);
             System.out.println("삭제할 찜 목록 번호를 입력하세요: ");
             Scanner sc = new Scanner(System.in);
-            int inputIndex = Integer.parseInt(sc.nextLine());
+            int inputIndex = 0;
+            try {
+                inputIndex = Integer.parseInt(sc.nextLine());
+            } catch (Exception e) {
+                System.out.println("숫자를 입력해주세요.");
+                printDivide(null);
+                continue;
+            }
             if (inputIndex == 0) {
                 break;
             } else if (inputIndex <= restaurantList.size()) {
