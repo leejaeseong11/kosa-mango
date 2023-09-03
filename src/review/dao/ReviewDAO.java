@@ -186,7 +186,7 @@ public class ReviewDAO {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		String selectCategorizedSQL = "SELECT rating, review_content, write_time FROM reviews WHERE restaurant_id=? AND rating =?";
+		String selectCategorizedSQL = "SELECT rating, review_content, write_time FROM reviews WHERE restaurant_id=? AND rating =? ORDER BY write_Time DESC";
 		ArrayList<ReviewDTO> categorizedReviews = new ArrayList<>();
 		try {
 			conn = JDBC.connect();
@@ -257,7 +257,7 @@ public class ReviewDAO {
 		ResultSet rs = null;
 		String selectByRestaurantSQL = "SELECT *" + " FROM (SELECT ROWNUM rn, a.*" + " FROM ("
 				+ " SELECT user_id, review_content, rating, write_time" + " FROM reviews "
-				+ " WHERE restaurant_id = ?)  a" + ")" + " WHERE rn BETWEEN ? AND ?";
+				+ " WHERE restaurant_id = ?)  a" + ")" + " WHERE rn BETWEEN ? AND ? ORDER BY write_Time DESC";
 		ArrayList<ReviewDTO> restaurantReviews = new ArrayList<>();
 
 		int sizeA = 1 + pageSize * (index - 1);
@@ -329,7 +329,7 @@ public class ReviewDAO {
 		ResultSet rs = null;
 		String selectByUserSQL = "SELECT *" + " FROM (SELECT ROWNUM rn, a.*" + " FROM ("
 				+ " SELECT user_id, review_content, rating, write_time, restaurant_id, review_id" + " FROM reviews " + " WHERE user_id = ?)  a"
-				+ ")" + " WHERE rn BETWEEN ? AND ?";
+				+ ")" + " WHERE rn BETWEEN ? AND ? ORDER BY write_Time DESC";
 		ArrayList<ReviewDTO> userReviews = new ArrayList<>();
 		int sizeA = 1 + pageSize * (index - 1);
 		int sizeB = pageSize * index;

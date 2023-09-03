@@ -116,12 +116,16 @@ public class RestaurantService {
         if (rDto.getName() != null) {
             System.out.println(String.format("식당 이름: %s", rDto.getName()));
             System.out.println(String.format("카테고리: %s", rDto.getCategories().stream().map(categoryDTO -> categoryDTO.getName()).collect(Collectors.joining(" / "))));
-            System.out.println(String.format("평점: %.1f, 조회수: %d", rDto.getRatingScore(), rDto.getViewCount()));
+            if (rDto.getRatingScore() == 0 || rDto.getRatingScore() == -1) {
+                System.out.println(String.format("평점: -, 조회수: %d", rDto.getViewCount()));
+            } else {
+                System.out.println(String.format("평점: %.1f, 조회수: %d", rDto.getRatingScore(), rDto.getViewCount()));
+            }
             RegionDTO regionDTO = rDto.getRegion();
             System.out.println(String.format("주소: %s %s %s %s", regionDTO.getCityName(), regionDTO.getSiGunGu(), regionDTO.getDongEupMyeon(), rDto.getDetailAddress()));
             System.out.println(String.format("영업 시간: %s", rDto.getRunTime()));
             ArrayList<MenuDTO> menuList = rDto.getMenu();
-            System.out.println("=".repeat(20) + " 메뉴 정보 " + "=".repeat(20));
+            System.out.println("=".repeat(20) + " 메뉴 정보 " + "=".repeat(20) + "원");
             for (int i = 0; i < menuList.size(); i++) {
                 System.out.println(String.format("⦁ %s : %d", menuList.get(i).getName(), menuList.get(i).getPrice()));
             }
