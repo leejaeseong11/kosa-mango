@@ -1,4 +1,4 @@
-import FavoriteDAO.FavoriteDAO;
+import favoriteDAO.FavoriteDAO;
 import exception.AddException;
 import exception.FindException;
 import exception.ModifyException;

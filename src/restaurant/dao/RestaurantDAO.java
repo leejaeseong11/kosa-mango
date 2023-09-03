@@ -1,9 +1,6 @@
 package restaurant.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -11,6 +8,7 @@ import category.dto.CategoryDTO;
 import exception.FindException;
 import jdbc.JDBC;
 import menu.dto.MenuDTO;
+import oracle.jdbc.OracleTypes;
 import region.dto.RegionDTO;
 import restaurant.dto.RestaurantDTO;
 
@@ -274,27 +272,15 @@ public class RestaurantDAO {
         }
 
         PreparedStatement pstmt = null;
+        CallableStatement cstmt = null;
         ResultSet rs = null;
         try {
-            String sql = "UPDATE restaurants SET view_count=NVL(view_count,0)+1 WHERE restaurant_id = ?";
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, restaurantId);
-            pstmt.executeUpdate();
-
-            sql = " SELECT *" +
-                    " FROM (SELECT *"+
-                    " FROM (SELECT res.restaurant_id, res.restaurant_name, NVL(res.rating_score, -1), res.view_count, res.run_time, res.zipcode, reg.city_name, reg.si_gun_gu, reg.dong_eup_myeon, res.detail_address, LISTAGG(c.category_name, ',') c_name, res.rating_score" +
-                    " FROM restaurants res" +
-                    " JOIN regions reg ON res.zipcode = reg.zipcode" +
-                    " JOIN restaurants_categories rc ON res.restaurant_id = rc.restaurant_id" +
-                    " JOIN categories c ON c.category_id = rc.category_id" +
-                    " JOIN menu m ON m.restaurant_id = res.restaurant_id" +
-                    " GROUP BY res.restaurant_id, res.restaurant_name, res.view_count, res.run_time, res.detail_address, res.zipcode, reg.city_name, reg.si_gun_gu, reg .dong_eup_myeon, res.rating_score)"+
-                    " WHERE restaurant_id = ?)";
-
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, restaurantId);
-            rs = pstmt.executeQuery();
+            String sql = "{call increase_view_count(?, ?)}";
+            cstmt = conn.prepareCall(sql);
+            cstmt.setInt(1, restaurantId);
+            cstmt.registerOutParameter(2, OracleTypes.CURSOR);
+            cstmt.execute();
+            rs = (ResultSet) cstmt.getObject(2);
 
             if (rs.next()) {
                 restaurantDetail = new RestaurantDTO();
@@ -360,6 +346,13 @@ public class RestaurantDAO {
             if (pstmt != null) {
                 try {
                     pstmt.close();
+                } catch (SQLException e) {
+                    throw new FindException("DB 종료에 실패했습니다.");
+                }
+            }
+            if (cstmt != null) {
+                try {
+                    cstmt.close();
                 } catch (SQLException e) {
                     throw new FindException("DB 종료에 실패했습니다.");
                 }

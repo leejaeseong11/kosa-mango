@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 import exception.AddException;
 import exception.FindException;
@@ -27,17 +29,22 @@ public class ReviewDAO {
 	 * @throws AddException
 	 */
 	public void insertReview(ReviewDTO reviewDTO) throws AddException {
-		String insertSQL = "INSERT INTO reviews (review_id, review_content, rating, write_Time, restaurant_id, user_id) VALUES (SEQ_REVIEW_ID.NEXTVAL, ?, ?,sysdate,?,?)";
+		String insertSQL = "INSERT INTO reviews (review_id, review_content, rating, write_Time, restaurant_id, user_id) VALUES (SEQ_REVIEW_ID.NEXTVAL, ?, ?,?,?,?)";
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try {
 			conn = JDBC.connect();
 			pstmt = conn.prepareStatement(insertSQL);
+
+			Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Seoul"));
+			java.sql.Timestamp kstTimestamp = new java.sql.Timestamp(calendar.getTimeInMillis());
+
 			pstmt.setString(1, reviewDTO.getContent());
 			pstmt.setInt(2, reviewDTO.getRating());
-			pstmt.setInt(3, reviewDTO.getRestaurantId());
-			pstmt.setInt(4, reviewDTO.getUserId());
+			pstmt.setTimestamp(3, kstTimestamp);
+			pstmt.setInt(4, reviewDTO.getRestaurantId());
+			pstmt.setInt(5, reviewDTO.getUserId());
 			pstmt.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -123,13 +130,17 @@ public class ReviewDAO {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		String updateSQL = "UPDATE reviews SET review_content = ?, write_Time=sysdate, rating=? WHERE review_id=?";
+		String updateSQL = "UPDATE reviews SET review_content = ?, write_Time=?, rating=? WHERE review_id=?";
 		try {
 			conn = JDBC.connect();
 			pstmt = conn.prepareStatement(updateSQL);
+
+			Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Seoul"));
+			java.sql.Timestamp kstTimestamp = new java.sql.Timestamp(calendar.getTimeInMillis());
 			pstmt.setString(1, content);
-			pstmt.setInt(2, rating);
-			pstmt.setInt(3, reviewId);
+			pstmt.setTimestamp(2, kstTimestamp);
+			pstmt.setInt(3, rating);
+			pstmt.setInt(4, reviewId);
 			pstmt.executeUpdate();
 		} catch (Exception e) {
 			throw new ModifyException("DB 연결에 실패했습니다.");

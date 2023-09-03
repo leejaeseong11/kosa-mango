@@ -208,7 +208,7 @@ public class UserDAO {
 			String updateSQL = "UPDATE users SET password=? WHERE user_id=? AND STATUS = 1";
 			pstmt = conn.prepareStatement(updateSQL);
 			pstmt.setInt(2, userId);
-			pstmt.setString(1, password);
+			pstmt.setString(1 , password);
 			pstmt.executeUpdate();
 
 		} catch (SQLException e) {
