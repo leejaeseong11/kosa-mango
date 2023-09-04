@@ -3,6 +3,9 @@
 ### Introduce
 - 검색을 통해 다양한 식당에 대해 정보와 리뷰를 제공하는 서비스
 - 식당을 다양한 기준으로 분류해서 사용자에게 맛집을 추천하는 서비스
+### Tech Stack
+- Java
+- Oracle DB
 ### How to start
 1. Oracle Cloud의 전자지갑 파일이 필요합니다. 팀장에게 문의하세요.
 2. 아래의 외부 `jar` 파일을 [여기](https://www.oracle.com/database/technologies/appdev/jdbc-downloads.html)에서 다운로드 받아 프로젝트에 포함시켜야 합니다. 사용 중인 오라클 DB의 버전은 19입니다.
